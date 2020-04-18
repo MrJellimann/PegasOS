@@ -1,7 +1,7 @@
 # PegasOS
 The public open-source repository for PegasOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi
 
-The documentation for this OS is listed [here](https://github.com/MrJellimann/KnightOSDocumentation)
+The documentation for this OS is listed [here](https://github.com/MrJellimann/PegasOSDocumentation)
 
 The source code for this OS is on this repository. (You are here!)
 
