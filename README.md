@@ -1,5 +1,5 @@
-# KnightOS
-The public open-source repository for KnightOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi
+# PegasOS
+The public open-source repository for PegasOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi
 
 The documentation for this OS is listed [here](https://github.com/MrJellimann/KnightOSDocumentation)
 
