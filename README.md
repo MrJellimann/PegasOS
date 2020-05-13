@@ -8,10 +8,10 @@ The source code for this OS is on this repository. (You are here!)
 # Setup
 
 ## Requirements
-Image Flasher
-Raspbian OS
-Cross-Compiler
-Ubuntu or Windows Subsystem for Linux
+* Image Flasher
+* Raspbian OS
+* Cross-Compiler
+* Ubuntu or Windows Subsystem for Linux
 
 ## Installation
 1. First, download an image flasher and verison of Raspbian OS. I used BalenaEtcher for this setup and downloaded the Raspbian OS Lite.
