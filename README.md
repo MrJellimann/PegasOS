@@ -19,8 +19,8 @@ The source code for this OS is on this repository. (You are here!)
 3. After flashing the SD card, you will need to setup the cross compiler. To do this, download the cross compiler I linked below.
 https://drive.google.com/open?id=160vJBxZeM5sEN2byHh4-GKmf33bKgtXV
 4. Once downloaded, you need to find a place to put it. I create a folder in the home directory called cross and put all the folders in there.
-5. After finding a directory for your cross compiler, you need to add the directory to the PATH environment variable. To do this, you need to type nano ~/.profile in your console and at the bottom add this line
-export PATH="(insert cross compiler's directory here)/bin:$PATH"
+5. After finding a directory for your cross compiler, you need to add the directory to the PATH environment variable. To do this, you need to type `nano ~/.profile` in your console and at the bottom add this line
+```export PATH="(insert cross compiler's directory here)/bin:$PATH"```
 Restart your computer in order for it to take effect.
 6. Now go into your project directory and type make in the console to compile everything. This should produce a kernel8.img file. Finally, put this file in your microSD card to replace the old kernel8.img and you should be done.
 
