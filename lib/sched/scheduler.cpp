@@ -38,6 +38,10 @@ CScheduler::CScheduler (void)
 
 	m_pCurrent = new CTask (0);		// main task currently running
 	assert (m_pCurrent != 0);
+
+	// TODO: make comparison function for PQ
+	// TODO: instantiate all the queues
+	
 }
 
 CScheduler::~CScheduler (void)
@@ -46,6 +50,8 @@ CScheduler::~CScheduler (void)
 	m_pTaskTerminationHandler = 0;
 
 	s_pThis = 0;
+
+
 }
 
 void CScheduler::Yield (void)
@@ -135,6 +141,10 @@ void CScheduler::RegisterTaskTerminationHandler (TSchedulerTaskHandler *pHandler
 	assert (m_pTaskTerminationHandler != 0);
 }
 
+
+// TODO: incorporate queues- it is currently FIFO into an array
+// we want waitingQ and insertQ to feed into userQ
+// find way to separate sys tasks from array also
 void CScheduler::AddTask (CTask *pTask)
 {
 	assert (pTask != 0);
@@ -211,6 +221,9 @@ void CScheduler::WakeTask (CTask **ppTask)
 	pTask->SetState (TaskStateReady);
 }
 
+//TODO: some sort of trading off between userQ and sysQ?
+// checking for aging, reweighting, rearraging?
+// if no sys tasks for directly to userQ, else do sys task
 unsigned CScheduler::GetNextTask (void)
 {
 	unsigned nTask = m_nCurrent < MAX_TASKS ? m_nCurrent : 0;
