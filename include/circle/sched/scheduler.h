@@ -50,6 +50,10 @@ public:
 		return s_pThis != 0 ? TRUE : FALSE;
 	}
 
+	// pegasos additions take one
+	static queue insertQ;
+
+
 private:
 	void AddTask (CTask *pTask);
 	friend class CTask;
@@ -72,6 +76,15 @@ private:
 	TSchedulerTaskHandler *m_pTaskTerminationHandler;
 
 	static CScheduler *s_pThis;
+
+	// pegasos additions take one
+	// FIFO
+	static queue waitingQ, systemQ;
+	// logn? sorted by some sort of weighted system for processes
+	// e.g: keyboard clicks before loading data, etc
+	// userQ is interactive processes AND programs running on the shell
+	static priority_queue userQ;
+
 };
 
 #endif

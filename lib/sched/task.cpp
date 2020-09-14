@@ -46,6 +46,9 @@ CTask::CTask (unsigned nStackSize)
 		InitializeRegs ();
 	}
 
+	//TODO: task weight determination
+	// sys tasks should be unweighted
+
 	CScheduler::Get ()->AddTask (this);
 }
 
