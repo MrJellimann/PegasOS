@@ -24,10 +24,6 @@ https://drive.google.com/open?id=160vJBxZeM5sEN2byHh4-GKmf33bKgtXV
 Restart your computer in order for it to take effect.
 6. Now go into your project directory and type make in the console to compile everything. This should produce a kernel8.img file. Finally, put this file in your microSD card to replace the old kernel8.img and you should be done.
 
-## January 27th, 2020
-
-As the OS gets more filled out and designs/documents are created, they will go in the link above.
-
 PegasOS and Circle
 ======
 
