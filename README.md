@@ -14,8 +14,8 @@ The source code for this OS is on this repository. (You are here!)
 * Ubuntu or Windows Subsystem for Linux
 
 ## Installation
-1. First, download an image flasher and verison of Raspbian OS. I used BalenaEtcher for this setup and downloaded the Raspbian OS Lite.
-2. After downloading these, I flashed Raspian OS on my MicroSD card using the BalenaEtcher.
+1. First, download an image flasher and a verison of Raspbian OS. We recommend BalenaEtcher for its ease of use, and Raspbian OS Lite for having basically only bootcode to get the kernel running.
+2. After downloading these, flash Raspian onto your MicroSD card using an image flasher.
 3. After flashing the SD card, you will need to setup the cross compiler. For more information on how to do this, see the section about Compiling Circle below. *YOU SHOULD SET UP YOUR CROSS COMPILER COMPLETELY BEFORE COMPILING THE OS*
 4. Now navigate into the project directory, into the Sample folder and into 00-pegasos. Type `make` in the console to compile PegasOS alongside the Circle Library. This will produce a kernel image file.
 5. Navigate into the SD card that you flashed Raspbian to, and delete the kernel8.img file there. Replace it with the compiled PeagsOS kernel image.
