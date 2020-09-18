@@ -1,6 +1,6 @@
-*.bin
-fixup*.dat
-LICENCE.broadcom
-start*.elf
-COPYING.linux
-*.dtb
+# *.bin
+# fixup*.dat
+# LICENCE.broadcom
+# start*.elf
+# COPYING.linux
+# *.dtb
