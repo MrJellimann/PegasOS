@@ -41,10 +41,10 @@ FLOAT_ABI ?= hard
 GC_SECTIONS ?= 0
 
 CC	= $(PREFIX)gcc
-CPP	= $(PREFIX)g++.exe
-AS	= $(CC).exe
-LD	= $(PREFIX)ld.exe
-AR	= $(PREFIX)ar.exe
+CPP	= $(PREFIX)g++
+AS	= $(CC)
+LD	= $(PREFIX)ld
+AR	= $(PREFIX)ar
 
 ifeq ($(strip $(AARCH)),32)
 ifeq ($(strip $(RASPPI)),1)
