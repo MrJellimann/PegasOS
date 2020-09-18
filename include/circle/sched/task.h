@@ -42,7 +42,7 @@ public:
 	CTask (unsigned nStackSize = TASK_STACK_SIZE);		// nStackSize = 0 for main task
 	virtual ~CTask (void);
 
-	int weight;
+	int weight; //
 
 	virtual void Run (void);
 

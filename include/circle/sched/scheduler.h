@@ -51,7 +51,7 @@ public:
 	}
 
 	// pegasos additions take one
-	static queue insertQ;
+	// static queue insertQ;
 
 
 private:
@@ -79,12 +79,11 @@ private:
 
 	// pegasos additions take one
 	// FIFO
-	static queue waitingQ, systemQ;
+	// static queue waitingQ, systemQ;
 	// logn? sorted by some sort of weighted system for processes
 	// e.g: keyboard clicks before loading data, etc
 	// userQ is interactive processes AND programs running on the shell
-	static priority_queue userQ;
-
+	// static priority_queue userQ;
 };
 
 #endif
