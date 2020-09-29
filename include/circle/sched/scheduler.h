@@ -20,8 +20,6 @@
 #ifndef _circle_sched_scheduler_h
 #define _circle_sched_scheduler_h
 
-#include <iostream>
-#include <queue>
 #include <circle/sched/task.h>
 #include <circle/sysconfig.h>
 #include <circle/types.h>
@@ -81,8 +79,7 @@ private:
 
 	// pegasos additions take one
 	// FIFO
-	static std::queue<int> waitingQ;
-	static std::queue<int> systemQ;
+	// static queue waitingQ, systemQ;
 	// logn? sorted by some sort of weighted system for processes
 	// e.g: keyboard clicks before loading data, etc
 	// userQ is interactive processes AND programs running on the shell
