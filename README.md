@@ -1,3 +1,212 @@
+# PegasOS
+The public open-source repository for PegasOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi
+
+The documentation for this OS is listed [here](https://github.com/MrJellimann/PegasOSDocumentation)
+
+The source code for this OS is on this repository. (You are here!)
+
+# Setup
+
+## Requirements
+* Image Flasher
+* Raspbian OS
+* Cross-Compiler
+* Ubuntu or Windows Subsystem for Linux
+
+## Installation
+1. First, download an image flasher and a verison of Raspbian OS. We recommend BalenaEtcher for its ease of use, and Raspbian OS Lite for having basically only bootcode to get the kernel running.
+2. After downloading these, flash Raspian onto your MicroSD card using an image flasher.
+3. After flashing the SD card, you will need to setup the cross compiler. For more information on how to do this, see the section about Compiling Circle below. *YOU SHOULD SET UP YOUR CROSS COMPILER COMPLETELY BEFORE COMPILING THE OS*
+4. Now navigate into the project directory, into the Sample folder and into 00-pegasos. Type `make` in the console to compile PegasOS alongside the Circle Library. This will produce a kernel image file.
+5. Navigate into the SD card that you flashed Raspbian to, and delete the kernel8.img file there. Replace it with the compiled PeagsOS kernel image.
+6. Insert the SD card into your Raspberry Pi and boot!
+
+## Compiling Circle
+To cross-compile Circle on Linux, do the following:
+
+Here, we will be doing this from Windows 10 running WSL on Debian (the steps are *roughly* the same for Ubuntu).
+
+=== Part 1 - Installing the Cross-Compiler for AArch64 ===
+
+Step 1.
+
+	Go to
+		https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads
+	And download the appropriate (aarch64-none-elf) compiler FOR YOUR CPU
+		Intel CPU running Linux -> gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf.tar.xz
+	If you are compiling this on an ARM cpu (such as a windows tablet), try this one instead
+		ARM64 CPU running Linux -> gcc-arm-9.2-2019.12-aarch64-aarch64-none-elf.tar.xz
+
+Step 2.
+
+	Extract the contents to a new folder.
+
+Step 3.
+
+	Open your WSL Distro (in my case, Debian).
+
+Step 4.
+
+	Create a directory called /opt
+	(Note: the directory name doesn't matter, but being consistent does)
+
+Step 5.
+
+	Open the folder in windows with `explorer.exe .`
+
+Step 6.
+
+	Open the folder you extracted the compiler to.
+
+Step 7.
+
+	Copy the folders within the compiler's folder into /opt.
+	These folders are called 'aarch64-none-elf', 'bin', 'include', 'lib', 'libexec', 'share'
+
+Step 8.
+
+	After the folders have copied over, open the `.profile` file for your user in your text editor.
+  If you are using Ubuntu, repeat steps 8 and 9 for your `.profile.save` file as well.
+	Sample: `nano ~/.profile`
+
+Step 9.
+
+	At the bottom of the file, add a line that says:
+		`export PATH="$HOME/opt/bin:$PATH"`
+		(Note: you may substitute this with a custom directory if you did that for Step 4)
+
+Step 10.
+
+	Restart your computer for the path changes to take effect.
+
+Step 11.
+
+	Reopen your WSL Distro.
+
+Step 12.
+
+	To confirm the path variable works correctly, type:
+		`aarch64-none-elf-gcc -v`
+		or
+		`aarch64-none-elf-gcc --version`
+
+Step 13.
+
+	If you see a copyright message, you've done it!
+
+=== Part 2 - Compiling the Libraries ===
+
+Step 14.
+
+	Clone the Circle project
+		https://github.com/rsta2/circle
+
+Step 15.
+
+	Move into the /circle/lib directory of the repository
+
+Step 16.
+
+	`make` the /lib folder
+
+Step 17.
+
+	Move into the /circle/lib/usb directory
+
+Step 18.
+
+	`make` the /lib/usb folder
+
+Step 19.
+
+	Move into the /circle/lib/input directory
+
+Step 20.
+
+	`make` the /lib/input folder
+
+Step 21.
+
+	Move into the /circle/lib/fs directory
+
+Step 22.
+
+	`make` the /lib/fs folder
+
+Step 23.
+
+	Move into the /circle/lib/fs/fat directory
+
+Step 24.
+
+	`make` the /lib/fs/fat folder
+
+Step 25.
+
+	Move into the /circle/lib/sched directory
+
+Step 26.
+
+	`make` the /lib/sched folder
+
+Step 27.
+
+	You've compiled the Circle library! (at least the important stuff)
+
+=== Part 3 - Compiling the Sample Kernel ===
+
+Step 28.
+
+	Move into the desired sample folder. In this case, the usbkeyboard folder
+	/circle/sample/08-usbkeyboard
+
+Step 29.
+
+	`make` the desired folder
+
+Step 30.
+
+	If you see a 'kernel8-rpi4.img' file, you've done it!
+
+=== Part 4 - Move files onto RPi Micro SD and Boot ===
+
+Step 31.
+
+	Insert your Micro SD card into your Micro SD card reader/adapter and into your PC
+
+Step 32.
+
+	Make sure that your Micro SD card is formatted for FAT file system
+
+Step 33.
+
+	Copy the files from /circle/boot onto your Micro SD card
+
+Step 34.
+
+	Copy the kernel image from Step 29 onto your Micro SD card
+
+Step 35.
+
+	Make sure that the 'config.txt' file is present on the Micro SD card for 64-bit boot
+
+Step 36.
+
+	Now remove your Micro SD card and reinsert it into your RPi
+
+Step 37.
+
+	Plug in your Pi and boot
+
+Step 38.
+
+	If you see text about Circle, you've done it!
+
+PegasOS and Circle
+======
+
+For completeness and inclusiveness, the Circle Library Readme is included below from Release 42.
+
 Circle
 ======
 

@@ -42,6 +42,8 @@ public:
 	CTask (unsigned nStackSize = TASK_STACK_SIZE);		// nStackSize = 0 for main task
 	virtual ~CTask (void);
 
+	int weight; //
+
 	virtual void Run (void);
 
 	void Terminate (void);			// callable from this task only
