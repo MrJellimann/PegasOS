@@ -23,7 +23,7 @@ cd ..
 cd fs
 $make $1 $2 || exit
 
-cd fat
+cd fatfs
 $make $1 $2 || exit
 cd ..
 

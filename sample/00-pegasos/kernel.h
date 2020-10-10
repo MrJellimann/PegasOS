@@ -32,6 +32,8 @@
 #include <circle/timer.h>
 #include <circle/logger.h>
 #include <circle/usb/usbhcidevice.h>
+#include <SDCard/emmc.h>
+#include <fatfs/ff.h>
 #include <circle/types.h>
 
 enum TShutdownMode
@@ -70,10 +72,12 @@ private:
 	CTimer			m_Timer;
 	CLogger			m_Logger;
 	CUSBHCIDevice		m_USBHCI;
-
+	CEMMCDevice		m_EMMC;
 	volatile TShutdownMode m_ShutdownMode;
 
 	static CKernel *s_pThis;
+	
+	FATFS			m_FileSystem;
 };
 
 #endif
