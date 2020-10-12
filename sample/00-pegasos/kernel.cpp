@@ -23,6 +23,7 @@
 #include <circle/string.h>
 #include <circle/util.h>
 #include <assert.h>
+#include <pegasos/something.h>
 
 #define DRIVE		"SD:"
 //#define DRIVE		"USB:"
@@ -54,6 +55,10 @@ CKernel::~CKernel (void)
 // basic keyboard setup
 boolean CKernel::Initialize (void)
 {
+	// Proving linking bullshit
+	int rando = something;
+	awful_funct();
+
 	boolean bOK = TRUE;
 
 	if (bOK)
