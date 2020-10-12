@@ -25,6 +25,11 @@
 #include <assert.h>
 #include <pegasos/something.h>
 
+#define DRIVE		"SD:"
+//#define DRIVE		"USB:"
+
+#define FILENAME	"/circle.txt"
+
 static const char FromKernel[] = "kernel";
 
 CKernel *CKernel::s_pThis = 0;
@@ -34,6 +39,7 @@ CKernel::CKernel (void)
 	m_Timer (&m_Interrupt),
 	m_Logger (m_Options.GetLogLevel (), &m_Timer),
 	m_USBHCI (&m_Interrupt, &m_Timer),
+	m_EMMC (&m_Interrupt, &m_Timer, &m_ActLED),
 	m_ShutdownMode (ShutdownNone)
 {
 	s_pThis = this;
@@ -90,6 +96,11 @@ boolean CKernel::Initialize (void)
 	{
 		bOK = m_USBHCI.Initialize ();
 	}
+	
+	if (bOK)
+	{
+		bOK = m_EMMC.Initialize ();
+	}
 
 	return bOK;
 }
@@ -98,6 +109,126 @@ TShutdownMode CKernel::Run (void)
 {
 	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
 
+
+	// Mount file system
+	if (f_mount (&m_FileSystem, DRIVE, 1) != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot mount drive: %s", DRIVE);
+	}
+
+	if (m_FileSystem.fs_type == FS_EXFAT)
+	{
+		m_Logger.Write (FromKernel, LogNotice, "oooooooooooooooooooexfat");
+	}
+
+	if (m_FileSystem.fs_type == FS_FAT12)
+	{
+		m_Logger.Write (FromKernel, LogNotice, "ooooooooooooooooooooofat12");
+	}
+
+	if (m_FileSystem.fs_type == FS_FAT16)
+	{
+		m_Logger.Write (FromKernel, LogNotice, "oooooooooooooooooooofat16");
+	}
+
+	if (m_FileSystem.fs_type == FS_FAT32)
+	{
+		m_Logger.Write (FromKernel, LogNotice, "oooooooooooooooooooooofat32");
+	}
+	// Show contents of root directory
+	DIR Directory;
+	FILINFO FileInfo;
+	FRESULT Result = f_findfirst (&Directory, &FileInfo, DRIVE "/", "*");
+	for (unsigned i = 0; Result == FR_OK && FileInfo.fname[0]; i++)
+	{
+		if (!(FileInfo.fattrib & (AM_HID | AM_SYS)))
+		{
+			CString FileName;
+			FileName.Format ("%-19s", FileInfo.fname);
+
+			m_Screen.Write ((const char *) FileName, FileName.GetLength ());
+
+			if (i % 4 == 3)
+			{
+				m_Screen.Write ("\n", 1);
+			}
+		}
+
+		Result = f_findnext (&Directory, &FileInfo);
+	}
+	m_Screen.Write ("\n", 1);
+
+	
+	// Create file and write to it
+	FIL File;
+	Result = f_open (&File, DRIVE FILENAME, FA_WRITE | FA_CREATE_ALWAYS);
+	if (Result != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot create file: %s", FILENAME);
+	}
+
+	
+	for (unsigned nLine = 1; nLine <= 5; nLine++)
+	{
+		CString Msg;
+		Msg.Format ("Hello File! (Line %u)\n", nLine);
+
+		unsigned nBytesWritten;
+		if (   f_write (&File, (const char *) Msg, Msg.GetLength (), &nBytesWritten) != FR_OK
+		    || nBytesWritten != Msg.GetLength ())
+		{
+			m_Logger.Write (FromKernel, LogError, "Write error");
+			break;
+		}
+	}
+
+	
+	if (f_close (&File) != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot close file");
+	}
+
+	// Reopen file, read it and display its contents
+	Result = f_open (&File, DRIVE FILENAME, FA_READ | FA_OPEN_EXISTING);
+	if (Result != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
+	}
+	
+	char Buffer[100];
+	unsigned nBytesRead;
+	while ((Result = f_read (&File, Buffer, sizeof Buffer, &nBytesRead)) == FR_OK)
+	{
+		if (nBytesRead > 0)
+		{
+			m_Screen.Write (Buffer, nBytesRead);
+		}
+
+		if (nBytesRead < sizeof Buffer)		// EOF?
+		{
+			break;
+		}
+	}
+
+	
+	if (Result != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogError, "Read error");
+	}
+	
+	if (f_close (&File) != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot close file");
+	}
+
+
+	// Reopen file, read it and display its contents
+	Result = f_open (&File, DRIVE FILENAME, FA_READ | FA_OPEN_EXISTING);
+	if (Result != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
+	}
+
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) m_DeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
 	{
@@ -105,17 +236,16 @@ TShutdownMode CKernel::Run (void)
 
 		return ShutdownHalt;
 	}
-
+	
 #if 1	// set to 0 to test raw mode
 	pKeyboard->RegisterShutdownHandler (ShutdownHandler);
 	pKeyboard->RegisterKeyPressedHandler (KeyPressedHandler);
 #else
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
 #endif
-
-	s_pThis->m_Screen.Write ("welcome to PegasOS!\n", 19);
+	s_pThis->m_Screen.Write ("welcome to PegasOS!\n", 21);
 	m_Logger.Write (FromKernel, LogNotice, "Just type something!");
-
+	
 	// this is the main loop for the OS
 	for (unsigned nCount = 0; m_ShutdownMode == ShutdownNone; nCount++)
 	{
@@ -126,6 +256,12 @@ TShutdownMode CKernel::Run (void)
 		
 		m_Screen.Rotor (0, nCount);
 		m_Timer.MsDelay (100);
+	}
+
+	// Unmount file system
+	if (f_mount (0, DRIVE, 0) != FR_OK)
+	{
+		m_Logger.Write (FromKernel, LogPanic, "Cannot unmount drive: %s", DRIVE);
 	}
 
 	return m_ShutdownMode;

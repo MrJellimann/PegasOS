@@ -29,7 +29,7 @@ PREFIX	 ?= arm-none-eabi-
 PREFIX64 ?= aarch64-none-elf-
 
 # see: doc/stdlib-support.txt
-STDLIB_SUPPORT ?= 0
+STDLIB_SUPPORT ?= 1
 
 # set this to 0 to globally disable dependency checking
 CHECK_DEPS ?= 1
