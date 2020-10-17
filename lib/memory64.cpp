@@ -58,6 +58,7 @@ CMemorySystem::CMemorySystem (boolean bEnableMMU)
 	size_t nBlockReserve = m_nMemSize - MEM_HEAP_START - PAGE_RESERVE;
 	m_HeapLow.Setup (MEM_HEAP_START, nBlockReserve, 0x40000);
 
+// check ram size to update memory high
 #if RASPPI >= 4
 	unsigned nRAMSize = CMachineInfo::Get ()->GetRAMSize ();
 	if (nRAMSize > 1024)
@@ -76,6 +77,7 @@ CMemorySystem::CMemorySystem (boolean bEnableMMU)
 
 	m_Pager.Setup (MEM_HEAP_START + nBlockReserve, PAGE_RESERVE);
 
+	// create page table once MMU enabled
 	if (m_bEnableMMU)
 	{
 		m_pTranslationTable = new CTranslationTable (m_nMemSize);
@@ -146,6 +148,7 @@ CMemorySystem *CMemorySystem::Get (void)
 	return s_pThis;
 }
 
+// Enables MMU
 void CMemorySystem::EnableMMU (void)
 {
 	assert (m_bEnableMMU);

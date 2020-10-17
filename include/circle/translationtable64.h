@@ -39,6 +39,7 @@ public:
 
 private:
 	TARMV8MMU_LEVEL3_DESCRIPTOR *CreateLevel3Table (uintptr nBaseAddress) NOOPT;
+	TARMV8MMU_LEVEL3_DESCRIPTOR_4BIT *CreateLevel3Table_4BIT (uintptr nBaseAddress) NOOPT;
 
 private:
 	size_t m_nMemSize;

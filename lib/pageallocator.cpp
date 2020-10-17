@@ -49,19 +49,23 @@ size_t CPageAllocator::GetFreeSpace (void) const
 	return m_pLimit - m_pNext;
 }
 
+// page allocator
 void *CPageAllocator::Allocate (void)
 {
 	assert (m_pNext != 0);
 
+	// waiting loop
 	m_SpinLock.Acquire ();
 
-#ifdef PAGE_DEBUG
-	if (++m_nCount > m_nMaxCount)
-	{
-		m_nMaxCount = m_nCount;
-	}
-#endif
+// debugging purposes
+	#ifdef PAGE_DEBUG
+		if (++m_nCount > m_nMaxCount)
+		{
+			m_nMaxCount = m_nCount;
+		}
+	#endif
 
+	// Current Page
 	TFreePage *pFreePage;
 	if ((pFreePage = m_pFreeList) != 0)
 	{
@@ -71,10 +75,13 @@ void *CPageAllocator::Allocate (void)
 	}
 	else
 	{
+		// Next page
 		pFreePage = (TFreePage *) m_pNext;
 
+		// updates page size
 		m_pNext += PAGE_SIZE;
 
+		// panic if reaches page limit
 		if (m_pNext > m_pLimit)
 		{
 			m_SpinLock.Release ();
@@ -88,6 +95,7 @@ void *CPageAllocator::Allocate (void)
 	return pFreePage;
 }
 
+// free page
 void CPageAllocator::Free (void *pPage)
 {
 	if (pPage == 0)
@@ -95,8 +103,10 @@ void CPageAllocator::Free (void *pPage)
 		return;
 	}
 
+	// page
 	TFreePage *pFreePage = (TFreePage *) pPage;
 
+	// waiting loop
 	m_SpinLock.Acquire ();
 
 	pFreePage->nMagic = FREEPAGE_MAGIC;
@@ -104,13 +114,16 @@ void CPageAllocator::Free (void *pPage)
 	pFreePage->pNext = m_pFreeList;
 	m_pFreeList = pFreePage;
 
+// debugging purposes
 #ifdef PAGE_DEBUG
 	m_nCount--;
 #endif
 
+	// out of spinlock
 	m_SpinLock.Release ();
 }
 
+// debugging purposes
 #ifdef PAGE_DEBUG
 
 void CPageAllocator::DumpStatus (void)
