@@ -10,6 +10,7 @@ The source code for this OS is on this repository. (You are here!)
 ## Requirements
 * Cross-Compiler (see the guide [here](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md))
 * Ubuntu/Debian or other Windows Subsystem for Linux
+* Raspberry Pi 4 with SD Card
 
 ## Installation
 1. Set up your cross-compiler and compile the kernel image (the file will say something like `kernel8-rpi4.img`).
