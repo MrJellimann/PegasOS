@@ -22,14 +22,18 @@ The source code for this OS is on this repository. (You are here!)
 
 ## Compiling Circle/PegasOS
 
-For a detailed guide on how to set up the cross-compiler and manually compile Circle and/or PegasOS, [refer to the following guide.](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md)
+For a detailed guide on how to set up the cross-compiler and manually compile Circle and/or PegasOS, [refer to the guide.](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md)
 
 We have included a `makefile` that will handle each step of the actual compile for you, however you will still need to install the cross-compiler before it will work.
 
 PegasOS and Circle
 ======
 
-For completeness and inclusiveness, the Circle Library Readme is included below from Release 42.
+For completeness and inclusiveness, the Circle Library Readme is included in its entirety below from Release 42.
+
+---
+
+---
 
 Circle
 ======
