@@ -1,7 +1,7 @@
 # PegasOS
 The public open-source repository for PegasOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi.
 
-The documentation for this OS is listed [here](https://github.com/MrJellimann/PegasOSDocumentation)
+The documentation for this OS is listed [here.](https://github.com/MrJellimann/PegasOSDocumentation)
 
 The source code for this OS is on this repository. (You are here!)
 
@@ -22,7 +22,7 @@ The source code for this OS is on this repository. (You are here!)
 
 ## Compiling Circle/PegasOS
 
-For a detailed guide on how to set up the cross-compiler and manually compile Circle and/or PegasOS, refer to the following [guide.](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md)
+For a detailed guide on how to set up the cross-compiler and manually compile Circle and/or PegasOS, [refer to the following guide.](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md)
 
 We have included a `makefile` that will handle each step of the actual compile for you, however you will still need to install the cross-compiler before it will work.
 
