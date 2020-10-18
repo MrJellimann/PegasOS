@@ -1,5 +1,5 @@
 # PegasOS
-The public open-source repository for PegasOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi
+The public open-source repository for PegasOS, a 64-bit ARMv8 Operating System, primarily for the Raspberry Pi.
 
 The documentation for this OS is listed [here](https://github.com/MrJellimann/PegasOSDocumentation)
 
@@ -8,22 +8,20 @@ The source code for this OS is on this repository. (You are here!)
 # Setup
 
 ## Requirements
-* Image Flasher
-* Raspbian OS
-* Cross-Compiler
-* Ubuntu or Windows Subsystem for Linux
+* Cross-Compiler (see the guide [here](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md))
+* Ubuntu/Debian or other Windows Subsystem for Linux
 
 ## Installation
-1. First, download an image flasher and a verison of Raspbian OS. We recommend BalenaEtcher for its ease of use, and Raspbian OS Lite for having basically only bootcode to get the kernel running.
-2. After downloading these, flash Raspian onto your MicroSD card using an image flasher.
-3. After flashing the SD card, you will need to setup the cross compiler. For more information on how to do this, see the section about Compiling Circle below. *YOU SHOULD SET UP YOUR CROSS COMPILER COMPLETELY BEFORE COMPILING THE OS*
-4. Now navigate into the project directory, into the Sample folder and into 00-pegasos. Type `make` in the console to compile PegasOS alongside the Circle Library. This will produce a kernel image file.
-5. Navigate into the SD card that you flashed Raspbian to, and delete the kernel8.img file there. Replace it with the compiled PeagsOS kernel image.
+1. Set up your cross-compiler and compile the kernel image (the file will say something like `kernel8-rpi4.img`).
+2. Navigate into the `/boot` directory and run the `make` command. This will fetch all of the files needed to boot the Raspberry Pi.
+3. Make sure that your SD card is formatted to FAT and has nothing on it.
+4. Copy the contents of `/boot` onto your SD card.
+5. Copy your compiled kernel image from Step 1 onto the SD card.
 6. Insert the SD card into your Raspberry Pi and boot!
 
-## Compiling Circle
+## Compiling Circle/PegasOS
 
-For a detailed guide on how to cross compile Circle and/or PegasOS, refer to the following [guide.](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md)
+For a detailed guide on how to set up the cross-compiler and manually compile Circle and/or PegasOS, refer to the following [guide.](https://github.com/MrJellimann/PegasOSDocumentation/Guides/G_CROSSCOMPILE.md)
 
 We have included a `makefile` that will handle each step of the actual compile for you, however you will still need to install the cross-compiler before it will work.
 
