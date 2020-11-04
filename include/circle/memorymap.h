@@ -37,7 +37,7 @@
 #define GPU_MEM_SIZE		(64 * MEGABYTE)			// set in config.txt
 #define ARM_MEM_SIZE		(MEM_SIZE - GPU_MEM_SIZE)	// normally overwritten
 
-#define PAGE_SIZE			4096				// PegasOS Page Size
+#define PAGE_SIZE		4096				// page size used by us
 
 #define KERNEL_STACK_SIZE	0x20000				// all sizes must be a multiple of 16K
 #define EXCEPTION_STACK_SIZE	0x8000
