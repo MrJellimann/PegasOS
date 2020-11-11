@@ -36,6 +36,10 @@
 #include <fatfs/ff.h>
 #include <circle/types.h>
 
+
+#define MAX_INPUT_LENGTH 256
+#define MAX_DIRECTORY_LENGTH 1024
+
 enum TShutdownMode
 {
 	ShutdownNone,
@@ -56,6 +60,12 @@ public:
 private:
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
+	static void CommandMatch(const char *commandName);
+	static void displayUserWithDirectory();
+	static void CommandLineIn(const char *keyInput);
+	static void splitCommandLine(const char *inputGiven);
+	static char* getCurrentUserName();
+	static void commenceLogin();
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
 	
