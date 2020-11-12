@@ -206,6 +206,16 @@ void PShell::CommandMatch(const char *commandName)
 	{
 		pKernel->GetKernelScreenDevice()->Write("We found login!\n", 16);
 	}
+    // Reboot
+    else if (strcmp("reboot", commandName) == 0)
+    {
+        pKernel->SystemReboot();
+    }
+    // Power Off
+    else if (strcmp("power", commandName) == 0)
+    {
+        pKernel->SystemOff();
+    }
 
 	strcpy(_mainCommandName, "");
 }

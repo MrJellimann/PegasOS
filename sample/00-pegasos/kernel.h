@@ -56,6 +56,9 @@ public:
 
 	TShutdownMode Run (void);
 
+	static void SystemReboot();
+	static void SystemOff();
+
 	static CMemorySystem *GetKernelMemory();
 	static CActLED *GetKernelActLED();
 	static CDeviceNameService *GetKernelDNS();
@@ -69,11 +72,6 @@ public:
 private:
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
-	// static void CommandMatch(const char *commandName);
-	// static void displayUserWithDirectory();
-	// static void CommandLineIn(const char *keyInput);
-	// static void splitCommandLine(const char *inputGiven);
-	// static char* getCurrentUserName();
 	static void commenceLogin();
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
