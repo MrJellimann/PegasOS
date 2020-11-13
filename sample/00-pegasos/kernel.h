@@ -36,6 +36,9 @@
 #include <fatfs/ff.h>
 #include <circle/types.h>
 
+#define MAX_INPUT_LENGTH 256
+#define MAX_DIRECTORY_LENGTH 1024
+
 enum TShutdownMode
 {
 	ShutdownNone,
@@ -53,27 +56,41 @@ public:
 
 	TShutdownMode Run (void);
 
+	static void SystemReboot();
+	static void SystemOff();
+
+	static CMemorySystem *GetKernelMemory();
+	static CActLED *GetKernelActLED();
+	static CDeviceNameService *GetKernelDNS();
+	static CScreenDevice *GetKernelScreenDevice();
+	static CSerialDevice *GetKernelSerialDevice();
+	static CExceptionHandler *GetKernelExceptionHandler();
+	static CInterruptSystem *GetKernelInterruptSystem();
+	static CTimer *GetKernelTimer();
+	static CLogger *GetKernelLogger();
+
 private:
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
+	static void commenceLogin();
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
 	
 private:
 	// do not change this order
-	CMemorySystem		m_Memory;
-	CActLED			m_ActLED;
-	CKernelOptions		m_Options;
-	CDeviceNameService	m_DeviceNameService;
-	CScreenDevice		m_Screen;
-	CSerialDevice		m_Serial;
-	CExceptionHandler	m_ExceptionHandler;
-	CInterruptSystem	m_Interrupt;
-	CTimer			m_Timer;
-	CLogger			m_Logger;
-	CUSBHCIDevice		m_USBHCI;
-	CEMMCDevice		m_EMMC;
-	volatile TShutdownMode m_ShutdownMode;
+	CMemorySystem			m_Memory;
+	CActLED					m_ActLED;
+	CKernelOptions			m_Options;
+	CDeviceNameService		m_DeviceNameService;
+	CScreenDevice			m_Screen;
+	CSerialDevice			m_Serial;
+	CExceptionHandler		m_ExceptionHandler;
+	CInterruptSystem		m_Interrupt;
+	CTimer					m_Timer;
+	CLogger					m_Logger;
+	CUSBHCIDevice			m_USBHCI;
+	CEMMCDevice				m_EMMC;
+	volatile TShutdownMode 	m_ShutdownMode;
 
 	static CKernel *s_pThis;
 	

@@ -24,6 +24,7 @@
 #include <circle/util.h>
 #include <assert.h>
 #include <pegasos/something.h>
+#include <pegasos/shell.h>
 
 #define DRIVE		"SD:"
 //#define DRIVE		"USB:"
@@ -31,8 +32,21 @@
 #define FILENAME	"/circle.txt"
 
 static const char FromKernel[] = "kernel";
+// int stringLen, globalIndex=0;
+// char inputByUser[200], message[MAX_INPUT_LENGTH]="Command was found!"; /////////
+// char directory[MAX_DIRECTORY_LENGTH];
+// char mainCommandName[MAX_DIRECTORY_LENGTH];
+// char commandParameter[MAX_INPUT_LENGTH];
+// char userName[MAX_INPUT_LENGTH]="GiancarloGuillen";
+// char helloMessagePartOne[MAX_INPUT_LENGTH]="Well hello there ";
+// char helloMessagePartTwo[MAX_INPUT_LENGTH]=", and welcome to PegasOS!";
+// char helpMessage1[]="This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tcd\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
+// char helpMessage2[]="\n\tcreatefile\n\tcurrentdir\n\tdelete\n\tdeletedir\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlogin\n\tmount\n\tmove\n\tpower\n\tsysteminfo\n\ttail";
+// char helpMessage3[]="\n\tmount\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n\tuninstall\n";
+// FIL NewFIle;
 
 CKernel *CKernel::s_pThis = 0;
+PShell *PegasosShell = 0;
 
 CKernel::CKernel (void)
 :	m_Screen (m_Options.GetWidth (), m_Options.GetHeight ()),
@@ -41,8 +55,12 @@ CKernel::CKernel (void)
 	m_USBHCI (&m_Interrupt, &m_Timer),
 	m_EMMC (&m_Interrupt, &m_Timer, &m_ActLED),
 	m_ShutdownMode (ShutdownNone)
+	//m_Shell (20)
 {
 	s_pThis = this;
+
+	PegasosShell = new PShell();
+	PegasosShell->AssignKernel(s_pThis);
 
 	m_ActLED.Blink (5);	// show we are alive
 }
@@ -56,7 +74,7 @@ CKernel::~CKernel (void)
 boolean CKernel::Initialize (void)
 {
 	// Proving linking bullshit
-	int rando = something;
+	//int rando = something;
 	awful_funct();
 
 	boolean bOK = TRUE;
@@ -118,22 +136,22 @@ TShutdownMode CKernel::Run (void)
 
 	if (m_FileSystem.fs_type == FS_EXFAT)
 	{
-		m_Logger.Write (FromKernel, LogNotice, "oooooooooooooooooooexfat");
+		m_Logger.Write (FromKernel, LogNotice, "\t\tExFAT <ACTIVE>");
 	}
 
 	if (m_FileSystem.fs_type == FS_FAT12)
 	{
-		m_Logger.Write (FromKernel, LogNotice, "ooooooooooooooooooooofat12");
+		m_Logger.Write (FromKernel, LogNotice, "\t\tFAT12 <ACTIVE>");
 	}
 
 	if (m_FileSystem.fs_type == FS_FAT16)
 	{
-		m_Logger.Write (FromKernel, LogNotice, "oooooooooooooooooooofat16");
+		m_Logger.Write (FromKernel, LogNotice, "\t\tFAT16 <ACTIVE>");
 	}
 
 	if (m_FileSystem.fs_type == FS_FAT32)
 	{
-		m_Logger.Write (FromKernel, LogNotice, "oooooooooooooooooooooofat32");
+		m_Logger.Write (FromKernel, LogNotice, "\t\tFAT32 <ACTIVE>");
 	}
 	// Show contents of root directory
 	DIR Directory;
@@ -146,17 +164,17 @@ TShutdownMode CKernel::Run (void)
 			CString FileName;
 			FileName.Format ("%-19s", FileInfo.fname);
 
-			m_Screen.Write ((const char *) FileName, FileName.GetLength ());
+			//m_Screen.Write ((const char *) FileName, FileName.GetLength ());
 
 			if (i % 4 == 3)
 			{
-				m_Screen.Write ("\n", 1);
+				//m_Screen.Write ("\n", 1);
 			}
 		}
 
 		Result = f_findnext (&Directory, &FileInfo);
 	}
-	m_Screen.Write ("\n", 1);
+	//m_Screen.Write ("\n", 1);
 
 	
 	// Create file and write to it
@@ -228,6 +246,7 @@ TShutdownMode CKernel::Run (void)
 	{
 		m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
 	}
+	commenceLogin();
 
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) m_DeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
@@ -245,6 +264,8 @@ TShutdownMode CKernel::Run (void)
 #endif
 	s_pThis->m_Screen.Write ("welcome to PegasOS!\n", 21);
 	m_Logger.Write (FromKernel, LogNotice, "Just type something!");
+	//commenceLogin();
+	PegasosShell->DisplayUserWithDirectory();
 	
 	// this is the main loop for the OS
 	for (unsigned nCount = 0; m_ShutdownMode == ShutdownNone; nCount++)
@@ -267,10 +288,30 @@ TShutdownMode CKernel::Run (void)
 	return m_ShutdownMode;
 }
 
+void CKernel::commenceLogin()
+{
+	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\n Please enter a Username for yourself.\nUsername: ",76);
+	s_pThis->m_Timer.MsDelay (5000);
+	/*CUSBKeyboardDevice *testKeyboard = (CUSBKeyboardDevice *) s_pThis->m_DeviceNameService.GetDevice ("ukbd1", FALSE);
+	if (testKeyboard == 0)
+	{
+		s_pThis->m_Logger.Write (FromKernel, LogError, "Keyboard not found");
+		//return ShutdownHalt;
+	}
+	#if 1	// set to 0 to test raw mode
+		pKeyboard->RegisterShutdownHandler (ShutdownHandler);
+		pKeyboard->RegisterKeyPressedHandler (KeyPressedHandler);
+	#else
+		pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
+	#endif*/
+}
+
 void CKernel::KeyPressedHandler (const char *pString)
 {
 	assert (s_pThis != 0);
 	s_pThis->m_Screen.Write (pString, strlen (pString));
+	// CommandLineIn(pString);
+	PegasosShell->CommandLineIn(pString);
 }
 
 void CKernel::ShutdownHandler (void)
@@ -298,4 +339,64 @@ void CKernel::KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned cha
 	}
 
 	s_pThis->m_Logger.Write (FromKernel, LogNotice, Message);
+}
+
+//============================================================================//
+// PegasOS Kernel Extensions for Shell Commands
+void CKernel::SystemReboot()
+{
+	s_pThis->m_ShutdownMode = ShutdownReboot;
+}
+
+void CKernel::SystemOff()
+{
+	s_pThis->m_ShutdownMode = ShutdownHalt;
+}
+
+//============================================================================//
+// Getter Extensions for internal kernel devices
+
+CMemorySystem *CKernel::GetKernelMemory()
+{
+	return &(s_pThis->m_Memory);
+}
+
+CActLED *CKernel::GetKernelActLED()
+{
+	return &(s_pThis->m_ActLED);
+}
+
+CDeviceNameService *CKernel::GetKernelDNS()
+{
+	return &(s_pThis->m_DeviceNameService);
+}
+
+CScreenDevice *CKernel::GetKernelScreenDevice()
+{
+	return &(s_pThis->m_Screen);
+}
+
+CSerialDevice *CKernel::GetKernelSerialDevice()
+{
+	return &(s_pThis->m_Serial);
+}
+
+CExceptionHandler *CKernel::GetKernelExceptionHandler()
+{
+	return &(s_pThis->m_ExceptionHandler);
+}
+
+CInterruptSystem *CKernel::GetKernelInterruptSystem()
+{
+	return &(s_pThis->m_Interrupt);
+}
+
+CTimer *CKernel::GetKernelTimer()
+{
+	return &(s_pThis->m_Timer);
+}
+
+CLogger *CKernel::GetKernelLogger()
+{
+	return &(s_pThis->m_Logger);
 }
