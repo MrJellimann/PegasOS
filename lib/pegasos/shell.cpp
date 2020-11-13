@@ -5,13 +5,15 @@
 #include <pegasos/something.h>
 #include <pegasos/shell.h>
 
+#define SHELLDRIVE		"SD:/"
+
 CKernel *pKernel = 0;
 PShell *PShell::s_pThis = 0;
 
 static const char _FromKernel[] = "kernel";
 int _stringLen, _globalIndex=0;
 char _inputByUser[200], _message[PMAX_INPUT_LENGTH]="Command was found!"; /////////
-char _directory[PMAX_DIRECTORY_LENGTH];
+char _directory[PMAX_DIRECTORY_LENGTH]="SD:/";
 char _mainCommandName[PMAX_DIRECTORY_LENGTH];
 char _commandParameter[PMAX_INPUT_LENGTH];
 char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
@@ -20,7 +22,7 @@ char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
 char _helpMessage1[] = "This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tcd\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
 char _helpMessage2[] = "\n\tcreatefile\n\tcurrentdir\n\tdelete\n\tdeletedir\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlogin\n\tmount\n\tmove\n\tpower\n\tsysteminfo\n\ttail";
 char _helpMessage3[] = "\n\tmount\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n\tuninstall\n";
-FIL _NewFIle;
+FIL _NewFIle, _ReadFile;
 
 PShell::PShell(void)
 {
@@ -62,9 +64,8 @@ void PShell::SplitCommandLine(const char* input)
 {
 	strcpy(_mainCommandName, "");
 	strcpy(_commandParameter, "");
-	int  mainIndex = 0, subIndex = 0, spacebar = 0, charValue;
-
-	for (int x = 0; x < strlen(input); x++)
+	int  mainIndex = 0, subIndex = 0, spacebar = 0, stringLength=strlen(input);
+	for (int x = 0; x < stringLength; x++)
 	{
 		if (input[x] == 32)
 			spacebar = 1;
@@ -72,7 +73,7 @@ void PShell::SplitCommandLine(const char* input)
 
 	if (spacebar == 1)
 	{
-		for (int x = 0; x < strlen(input); x++)
+		for (int x = 0; x < stringLength; x++)
 		{
 			if (input[x] == 32)
 				spacebar = x;
@@ -85,7 +86,7 @@ void PShell::SplitCommandLine(const char* input)
 		_mainCommandName[mainIndex] = '\0';
 		mainIndex++;
 
-		for (; subIndex<strlen(input); subIndex++, mainIndex++)
+		for (; subIndex<stringLength; subIndex++, mainIndex++)
 		{
 			_commandParameter[subIndex] = input[mainIndex];
 		}
@@ -103,14 +104,27 @@ void PShell::CommandMatch(const char *commandName)
 	if (strcmp("changedir", commandName) == 0)
 	{
         assert(pKernel != 0);
-		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
-		pKernel->GetKernelScreenDevice()->Write("\n", 1);
+		FixDirectoryPath(_directory);
+		char _FilePath[]="";
+		strcat(_FilePath,DRIVE);
+		strcat(_FilePath,_commandParameter);
+		//DIR Directory;
+		FRESULT _Result=f_chdir(_FilePath);
+		if (_Result != FR_OK)
+		{
+			pKernel->GetKernelScreenDevice()->Write("The file path was incorrect\n", 28);
+		}
+		if(_Result == FR_OK)
+		{
+			strcpy(_directory,_FilePath);
+			pKernel->GetKernelScreenDevice()->Write(, strlen(currentLine));
+		}
 	}
     // Create File
 	else if (strcmp("createfile", commandName) == 0)
 	{
 		char fileName[] = "";
-		strcat(fileName, "SD:/");
+		strcat(fileName, DRIVE);
 		strcat(fileName, _commandParameter);
 		FRESULT Result = f_open (&_NewFIle, fileName, FA_WRITE | FA_CREATE_ALWAYS);
 		if (Result != FR_OK)
@@ -150,7 +164,7 @@ void PShell::CommandMatch(const char *commandName)
 	{
 		DIR Directory;
 		FILINFO FileInfo;
-		FRESULT Result = f_findfirst (&Directory, &FileInfo, DRIVE "/", "*");
+		FRESULT Result = f_findfirst (&Directory, &FileInfo, _directory, "*");
 		for (unsigned i = 0; Result == FR_OK && FileInfo.fname[0]; i++)
 		{
 			if (!(FileInfo.fattrib & (AM_HID | AM_SYS)))
@@ -185,6 +199,44 @@ void PShell::CommandMatch(const char *commandName)
 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
 	}
+	// Head
+	else if(strcmp("head", commandName)==0)
+	{
+		int _LinesToBeRead=5, _LinesRead=0;
+		char fileName[] = "";
+		strcat(fileName, SHELLDRIVE);
+		strcat(fileName, _commandParameter);
+		pKernel->GetKernelScreenDevice()->Write(fileName,strlen(fileName));
+		FRESULT Result = f_open (&_NewFIle, fileName, FA_READ | FA_OPEN_EXISTING);
+		if (Result != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogPanic, "Cannot open file: %s", fileName);
+		}
+		
+		char Buffer[100];
+		unsigned nBytesRead;
+		while ((Result = f_read (&_NewFIle, Buffer, sizeof Buffer, &nBytesRead)) == FR_OK)
+		{
+			if ((nBytesRead > 0) && (_LinesToBeRead > _LinesRead))
+			{
+				pKernel->GetKernelScreenDevice()->Write(Buffer, nBytesRead);
+			}
+			_LinesRead++;
+			if (nBytesRead < sizeof Buffer)		// EOF?
+			{
+				break;
+			}
+			pKernel->GetKernelScreenDevice()->Write("We went through the while loop!\n",32);
+		}
+		if (Result != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogError, "Read error");
+		}
+		if (f_close (&_NewFIle) != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogPanic, "Cannot close file");
+		}
+	}
     // Hello
 	else if (strcmp("hello", commandName) == 0)
 	{
@@ -193,6 +245,7 @@ void PShell::CommandMatch(const char *commandName)
 		strcat(_helloMessagePartOne, _helloMessagePartTwo);
 		pKernel->GetKernelScreenDevice()->Write(_helloMessagePartOne, strlen(_helloMessagePartOne));
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
+		strcpy(_helloMessagePartOne,"Well hello there ");
 	}
     // Help
 	else if (strcmp("help", commandName) == 0)
@@ -232,4 +285,24 @@ void PShell::DisplayUserWithDirectory()
 char* PShell::GetCurrentUsername()
 {
 	return _userName;
+}
+
+void PShell::FixDirectoryPath(char *currentDirectory)
+{
+	char *temp;
+	strcpy(temp,currentDirectory);
+	int length=strlen(currentDirectory), index=0;
+	while (index < length)
+	{
+		if(temp[index] == '/')
+		{
+			//
+		}
+	}
+	
+	temp[index]='\0';
+	pKernel->GetKernelScreenDevice()->Write(currentDirectory,strlen(currentDirectory));
+	pKernel->GetKernelScreenDevice()->Write("\n",1);
+	pKernel->GetKernelScreenDevice()->Write(temp,strlen(temp));
+	pKernel->GetKernelScreenDevice()->Write("\n",1);
 }
