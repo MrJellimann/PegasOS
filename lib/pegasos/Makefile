@@ -11,7 +11,7 @@
 
 CIRCLEHOME = ../..
 
-OBJS	= something.o
+OBJS	= something.o shell.o
 
 libpegasos.a: $(OBJS)
 	@echo "  AR    $@"

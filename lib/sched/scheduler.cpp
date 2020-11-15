@@ -38,6 +38,7 @@ CScheduler::CScheduler (void)
 
 	m_pCurrent = new CTask (0);		// main task currently running
 	assert (m_pCurrent != 0);
+	print = false;
 
 	// TODO: make comparison function for PQ
 	// TODO: instantiate all the queues
@@ -281,4 +282,22 @@ CScheduler *CScheduler::Get (void)
 {
 	assert (s_pThis != 0);
 	return s_pThis;
+}
+
+
+void CScheduler::turnPrintOff()
+{
+	print = false;
+	return;
+}
+
+void CScheduler::turnPrintOn()
+{
+	print = true;
+	return;
+}
+
+boolean CScheduler::getPrint()
+{
+	return print;
 }

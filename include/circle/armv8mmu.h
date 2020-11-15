@@ -121,6 +121,29 @@ struct TARMV8MMU_LEVEL3_PAGE_DESCRIPTOR
 }
 PACKED;
 
+
+struct TARMV8MMU_LEVEL3_PAGE_DESCRIPTOR_4BIT
+{
+	u64	Value11		: 2,		// set to 3
+		//LowerAttributes	: 10,
+			AttrIndx	: 3,	// [2:0], see MAIR_EL1
+			NS		: 1,	// RES0, set to 0
+			AP		: 2,	// [2:1]
+			SH		: 2,	// [1:0]
+			AF		: 1,	// set to 1, will fault otherwise
+			nG		: 1,	// set to 0
+		Reserved0_1	: 4,		// set to 0
+		OutputAddress	: 36,		// [47:12]
+		//UpperAttributes	: 12
+			Continous	: 1,	// set to 0
+			PXN		: 1,	// set to 0, 1 for device memory
+			UXN		: 1,	// set to 1
+			Ignored		: 9	// set to 0
+		;
+}
+PACKED;
+
+#define ARMV8MMU_LEVEL3_PAGESIZE_4KB 0x1000
 #define ARMV8MMU_LEVEL3_PAGE_SIZE	0x10000
 #define ARMV8MMUL3PAGEADDR(addr)	(((addr) >> 16) & 0xFFFFFFFF)
 #define ARMV8MMUL3PAGEPTR(page)		((void *) ((page) << 16))
@@ -139,6 +162,12 @@ union TARMV8MMU_LEVEL3_DESCRIPTOR
 }
 PACKED;
 
+union TARMV8MMU_LEVEL3_DESCRIPTOR_4BIT
+{
+	TARMV8MMU_LEVEL3_PAGE_DESCRIPTOR_4BIT	Page;
+	TARMV8MMU_LEVEL3_INVALID_DESCRIPTOR	Invalid;
+}
+PACKED;
 
 // System registers
 #define SCTLR_EL1_WXN		(1 << 19)		// SCTLR_EL1

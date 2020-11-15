@@ -52,6 +52,7 @@ CTranslationTable::CTranslationTable (size_t nMemSize)
 	{
 		u64 nBaseAddress = (u64) nEntry * ARMV8MMU_TABLE_ENTRIES * ARMV8MMU_LEVEL3_PAGE_SIZE;
 
+
 #if RASPPI >= 4
 		if (   nBaseAddress >= 4*GIGABYTE
 		    && !(   MEM_PCIE_RANGE_START_VIRTUAL <= nBaseAddress
@@ -61,9 +62,11 @@ CTranslationTable::CTranslationTable (size_t nMemSize)
 		}
 #endif
 
+		// create level 3 page table
 		TARMV8MMU_LEVEL3_DESCRIPTOR *pTable = CreateLevel3Table (nBaseAddress);
 		assert (pTable != 0);
 
+		// create level 2 page table
 		TARMV8MMU_LEVEL2_TABLE_DESCRIPTOR *pDesc = &m_pTable[nEntry].Table;
 
 		pDesc->Value11	    = 3;
@@ -94,9 +97,11 @@ uintptr CTranslationTable::GetBaseAddress (void) const
 
 TARMV8MMU_LEVEL3_DESCRIPTOR *CTranslationTable::CreateLevel3Table (uintptr nBaseAddress)
 {
+	// create level 3 page table
 	TARMV8MMU_LEVEL3_DESCRIPTOR *pTable = (TARMV8MMU_LEVEL3_DESCRIPTOR *) palloc ();
 	assert (pTable != 0);
 
+	// info needed to 
 	for (unsigned nPage = 0; nPage < ARMV8MMU_TABLE_ENTRIES; nPage++)	// 8192 entries a 64KB
 	{
 		TARMV8MMU_LEVEL3_PAGE_DESCRIPTOR *pDesc = &pTable[nPage].Page;
@@ -122,6 +127,64 @@ TARMV8MMU_LEVEL3_DESCRIPTOR *CTranslationTable::CreateLevel3Table (uintptr nBase
 			pDesc->PXN = 1;
 
 #if RASPPI >= 4
+			// if base address exceeds memory size
+			if (   (   nBaseAddress >= m_nMemSize
+			        && nBaseAddress < MEM_HIGHMEM_START)
+			    || nBaseAddress > MEM_HIGHMEM_END)
+#else
+			if (nBaseAddress >= m_nMemSize)
+#endif
+			{
+				pDesc->AttrIndx = ATTRINDX_DEVICE;
+				pDesc->SH	= ATTRIB_SH_OUTER_SHAREABLE;
+			}
+			else if (   nBaseAddress >= MEM_COHERENT_REGION
+				 && nBaseAddress <  MEM_HEAP_START)
+			{
+				pDesc->AttrIndx = ATTRINDX_COHERENT;
+				pDesc->SH	= ATTRIB_SH_OUTER_SHAREABLE;
+			}
+		}
+
+		nBaseAddress += ARMV8MMU_LEVEL3_PAGE_SIZE;
+	}
+
+	return pTable;
+}
+
+// 4096 Page Table
+TARMV8MMU_LEVEL3_DESCRIPTOR_4BIT *CTranslationTable::CreateLevel3Table_4BIT (uintptr nBaseAddress)
+{
+	// create level 3 page table
+	TARMV8MMU_LEVEL3_DESCRIPTOR_4BIT *pTable = (TARMV8MMU_LEVEL3_DESCRIPTOR_4BIT *) palloc ();
+	assert (pTable != 0);
+
+	// info needed to 
+	for (unsigned nPage = 0; nPage < ARMV8MMU_TABLE_ENTRIES; nPage++)	// 8192 entries a 64KB
+	{
+		TARMV8MMU_LEVEL3_PAGE_DESCRIPTOR_4BIT *pDesc = &pTable[nPage].Page;
+
+		pDesc->Value11	     = 3;
+		pDesc->AttrIndx	     = ATTRINDX_NORMAL;
+		pDesc->NS	     = 0;
+		pDesc->AP	     = ATTRIB_AP_RW_EL1;
+		pDesc->SH	     = ATTRIB_SH_INNER_SHAREABLE;
+		pDesc->AF	     = 1;
+		pDesc->nG	     = 0;
+		pDesc->Reserved0_1   = 0;
+		pDesc->OutputAddress = ARMV8MMUL3PAGEADDR (nBaseAddress);
+		pDesc->Continous     = 0;
+		pDesc->PXN	     = 0;
+		pDesc->UXN	     = 1;
+		pDesc->Ignored	     = 0;
+
+		extern u8 _etext;
+		if (nBaseAddress >= (u64) &_etext)
+		{
+			pDesc->PXN = 1;
+
+#if RASPPI >= 4
+			// if base address exceeds memory size
 			if (   (   nBaseAddress >= m_nMemSize
 			        && nBaseAddress < MEM_HIGHMEM_START)
 			    || nBaseAddress > MEM_HIGHMEM_END)

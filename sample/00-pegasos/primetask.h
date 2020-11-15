@@ -1,9 +1,9 @@
 //
-// translationtable64.h
+// primetask.h
 //
 // Circle - A C++ bare metal environment for Raspberry Pi
-// Copyright (C) 2016-2018  R. Stange <rsta2@o2online.de>
-//
+// Copyright (C) 2015  R. Stange <rsta2@o2online.de>
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -17,34 +17,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifndef _circle_translationtable64_h
-#define _circle_translationtable64_h
+#ifndef _primetask_h
+#define _primetask_h
 
-#include <circle/armv8mmu.h>
-#include <circle/macros.h>
+#include <circle/sched/task.h>
+#include <circle/screen.h>
 #include <circle/types.h>
 
-// index into MAIR_EL1 register
-#define ATTRINDX_NORMAL		0
-#define ATTRINDX_DEVICE		1
-#define ATTRINDX_COHERENT	2
+#define PRIME_MAX		100000000		// upper bound of calculation
+#define PRIME_MAX_SQRT		10000			// square root of PRIME_MAX
 
-class CTranslationTable
+#define PRIME_ARRAY_SIZE	((PRIME_MAX + 31) / 32)
+ 
+class CPrimeTask : public CTask
 {
 public:
-	CTranslationTable (size_t nMemSize) NOOPT;
-	~CTranslationTable (void);
+	CPrimeTask (CScreenDevice *pScreen);
+	~CPrimeTask (void);
 
-	uintptr GetBaseAddress (void) const;
-
-private:
-	TARMV8MMU_LEVEL3_DESCRIPTOR *CreateLevel3Table (uintptr nBaseAddress) NOOPT;
-	TARMV8MMU_LEVEL3_DESCRIPTOR_4BIT *CreateLevel3Table_4BIT (uintptr nBaseAddress) NOOPT;
+	void Run (void);
 
 private:
-	size_t m_nMemSize;
+	boolean IsPrime (unsigned nNumber);
 
-	TARMV8MMU_LEVEL2_DESCRIPTOR *m_pTable;
+	void NotPrime (unsigned nNumber);
+
+private:
+	CScreenDevice  *m_pScreen;
+	u32		m_PrimeArray[PRIME_ARRAY_SIZE];
 };
 
 #endif
