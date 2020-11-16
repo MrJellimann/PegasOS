@@ -13,7 +13,7 @@ PShell *PShell::s_pThis = 0;
 static const char _FromKernel[] = "kernel";
 int _stringLen, _globalIndex=0;
 char _inputByUser[200], _message[PMAX_INPUT_LENGTH]="Command was found!"; /////////
-char _directory[PMAX_DIRECTORY_LENGTH]="SD:/";
+char _directory[PMAX_DIRECTORY_LENGTH]="SD:";
 char _mainCommandName[PMAX_DIRECTORY_LENGTH];
 char _commandParameter[PMAX_INPUT_LENGTH];
 char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
@@ -104,9 +104,9 @@ void PShell::CommandMatch(const char *commandName)
 	if (strcmp("changedir", commandName) == 0)
 	{
         assert(pKernel != 0);
-		FixDirectoryPath(_directory);
 		char _FilePath[]="";
-		strcat(_FilePath,DRIVE);
+		strcat(_FilePath,_directory);
+		strcat(_FilePath,"/");
 		strcat(_FilePath,_commandParameter);
 		//DIR Directory;
 		FRESULT _Result=f_chdir(_FilePath);
@@ -117,14 +117,15 @@ void PShell::CommandMatch(const char *commandName)
 		if(_Result == FR_OK)
 		{
 			strcpy(_directory,_FilePath);
-			pKernel->GetKernelScreenDevice()->Write(, strlen(currentLine));
+			//pKernel->GetKernelScreenDevice()->Write(, strlen(currentLine));
 		}
 	}
     // Create File
 	else if (strcmp("createfile", commandName) == 0)
 	{
 		char fileName[] = "";
-		strcat(fileName, DRIVE);
+		strcat(fileName, _directory);
+		strcat(fileName,"/");
 		strcat(fileName, _commandParameter);
 		FRESULT Result = f_open (&_NewFIle, fileName, FA_WRITE | FA_CREATE_ALWAYS);
 		if (Result != FR_OK)
@@ -151,6 +152,21 @@ void PShell::CommandMatch(const char *commandName)
 		if (f_close (&_NewFIle) != FR_OK)
 		{
 			pKernel->GetKernelLogger()->Write (_FromKernel, LogPanic, "Cannot close file");
+		}
+	}
+	// Create Directory
+	else if (strcmp("createdir", commandName) == 0)
+	{
+		assert(pKernel != 0);
+		char _FilePath[]="";
+		strcat(_FilePath,_directory);
+		strcat(_FilePath,"/");
+		strcat(_FilePath,_commandParameter);
+		//DIR Directory;
+		FRESULT _Result=f_mkdir(_FilePath);
+		if (_Result != FR_OK)
+		{
+			pKernel->GetKernelScreenDevice()->Write("The sub-directory wasn't able to be made.\n", 42);
 		}
 	}
     // Copy
@@ -184,10 +200,25 @@ void PShell::CommandMatch(const char *commandName)
 		}
 	}
     // Delete
-	else if (strcmp("delete", commandName) == 0)
+	else if ((strcmp("delete", commandName) == 0) || (strcmp("deletedir", commandName) == 0))
 	{
 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
+		assert(pKernel != 0);
+		char _FilePath[]="";
+		strcat(_FilePath,_directory);
+		strcat(_FilePath,"/");
+		strcat(_FilePath,_commandParameter);
+		//DIR Directory;
+		FRESULT _Result=f_unlink(_FilePath);
+		if ((_Result != FR_OK) && (strcmp("delete", commandName) == 0))
+		{
+			pKernel->GetKernelScreenDevice()->Write("The file was not deleted.\n", 26);
+		}
+		if ((_Result != FR_OK) && (strcmp("deletedir", commandName) == 0))
+		{
+			pKernel->GetKernelScreenDevice()->Write("The directory was not deleted.\n", 31);
+		}
 	}
     // Echo
 	else if (strcmp("echo", commandName) == 0)
@@ -291,13 +322,14 @@ void PShell::FixDirectoryPath(char *currentDirectory)
 {
 	char *temp;
 	strcpy(temp,currentDirectory);
-	int length=strlen(currentDirectory), index=0;
+	int length=strlen(currentDirectory), index=0, bracket=0;
 	while (index < length)
 	{
 		if(temp[index] == '/')
 		{
-			//
+			bracket=index;
 		}
+		index++;
 	}
 	
 	temp[index]='\0';
