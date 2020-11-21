@@ -28,7 +28,8 @@ class PShell
         static void CommandMatch(const char *commandName);
         static void DisplayUserWithDirectory();
         static char* GetCurrentUsername();
-        static void FixDirectoryPath(char *currentDirectory);
+        static void CommenceLogin();
+        static void EditUserName(const char *loginName);
     
     private:
         static PShell *s_pThis;

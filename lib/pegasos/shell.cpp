@@ -11,7 +11,7 @@ CKernel *pKernel = 0;
 PShell *PShell::s_pThis = 0;
 
 static const char _FromKernel[] = "kernel";
-int _stringLen, _globalIndex=0;
+int _stringLen, _globalIndex=0;//, _OffBoot=0;
 char _inputByUser[200], _message[PMAX_INPUT_LENGTH]="Command was found!"; /////////
 char _directory[PMAX_DIRECTORY_LENGTH]="SD:";
 char _mainCommandName[PMAX_DIRECTORY_LENGTH];
@@ -43,10 +43,6 @@ void PShell::AssignKernel(CKernel* _kernel)
 
 void PShell::CommandLineIn(const char* keyInput)
 {
-    // pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "\nAttempting to read char into PSHELL...\n");
-	// assert (pKernel != 0);
-    // pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Successfully asserted kernel exists.\n");
-
 	if (strcmp(keyInput, "\n") == 0)
 	{
 		_stringLen = strlen(_inputByUser);
@@ -306,6 +302,11 @@ void PShell::CommandMatch(const char *commandName)
 
 void PShell::DisplayUserWithDirectory()
 {
+	/*if(_OffBoot == 0)
+	{
+		//CommenceLogin();
+		_OffBoot=1;
+	}*/
 	char currentLine[PMAX_DIRECTORY_LENGTH];
 	strcpy(currentLine, GetCurrentUsername());
 	strcat(currentLine, "@RasberryPI:~$ ");
@@ -313,28 +314,12 @@ void PShell::DisplayUserWithDirectory()
 	pKernel->GetKernelScreenDevice()->Write(currentLine, strlen(currentLine));
 }
 
+void PShell::EditUserName(const char *loginName)
+{
+	strcpy(_userName,loginName);
+}
+
 char* PShell::GetCurrentUsername()
 {
 	return _userName;
-}
-
-void PShell::FixDirectoryPath(char *currentDirectory)
-{
-	char *temp;
-	strcpy(temp,currentDirectory);
-	int length=strlen(currentDirectory), index=0, bracket=0;
-	while (index < length)
-	{
-		if(temp[index] == '/')
-		{
-			bracket=index;
-		}
-		index++;
-	}
-	
-	temp[index]='\0';
-	pKernel->GetKernelScreenDevice()->Write(currentDirectory,strlen(currentDirectory));
-	pKernel->GetKernelScreenDevice()->Write("\n",1);
-	pKernel->GetKernelScreenDevice()->Write(temp,strlen(temp));
-	pKernel->GetKernelScreenDevice()->Write("\n",1);
 }

@@ -73,6 +73,8 @@ private:
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
 	static void commenceLogin();
+	static void LoginInput(const char* keyInput);
+	static void EditFileName(char* tempFileName);
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
 	
