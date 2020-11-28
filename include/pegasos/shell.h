@@ -30,6 +30,8 @@ class PShell
         static char* GetCurrentUsername();
         static void CommenceLogin();
         static void EditUserName(const char *loginName);
+        static void FixWorkingDirectory();
+        static void SetColor(int red, int green, int blue);
     
     private:
         static PShell *s_pThis;
