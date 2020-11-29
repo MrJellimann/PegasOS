@@ -32,18 +32,8 @@
 #define FILENAME	"/circle.txt"
 
 static const char FromKernel[] = "kernel";
-// int stringLen, globalIndex=0;
-// char inputByUser[200], message[MAX_INPUT_LENGTH]="Command was found!"; /////////
-// char directory[MAX_DIRECTORY_LENGTH];
-// char mainCommandName[MAX_DIRECTORY_LENGTH];
-// char commandParameter[MAX_INPUT_LENGTH];
-// char userName[MAX_INPUT_LENGTH]="GiancarloGuillen";
-// char helloMessagePartOne[MAX_INPUT_LENGTH]="Well hello there ";
-// char helloMessagePartTwo[MAX_INPUT_LENGTH]=", and welcome to PegasOS!";
-// char helpMessage1[]="This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tcd\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
-// char helpMessage2[]="\n\tcreatefile\n\tcurrentdir\n\tdelete\n\tdeletedir\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlogin\n\tmount\n\tmove\n\tpower\n\tsysteminfo\n\ttail";
-// char helpMessage3[]="\n\tmount\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n\tuninstall\n";
-// FIL NewFIle;
+int _OffBoot=0, _UserNameMatch=0, _PasswordMatch=0;
+char _inputUsername[MAX_INPUT_LENGTH]="", _inputPassword[MAX_INPUT_LENGTH]="", _userResponse[MAX_INPUT_LENGTH]="";
 
 CKernel *CKernel::s_pThis = 0;
 PShell *PegasosShell = 0;
@@ -231,12 +221,12 @@ TShutdownMode CKernel::Run (void)
 	
 	if (Result != FR_OK)
 	{
-		m_Logger.Write (FromKernel, LogError, "Read error");
+		//m_Logger.Write (FromKernel, LogError, "Read error");
 	}
 	
 	if (f_close (&File) != FR_OK)
 	{
-		m_Logger.Write (FromKernel, LogPanic, "Cannot close file");
+		//m_Logger.Write (FromKernel, LogPanic, "Cannot close file");
 	}
 
 
@@ -244,9 +234,8 @@ TShutdownMode CKernel::Run (void)
 	Result = f_open (&File, DRIVE FILENAME, FA_READ | FA_OPEN_EXISTING);
 	if (Result != FR_OK)
 	{
-		m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
+		//m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
 	}
-	commenceLogin();
 
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) m_DeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
@@ -262,10 +251,11 @@ TShutdownMode CKernel::Run (void)
 #else
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
 #endif
-	s_pThis->m_Screen.Write ("welcome to PegasOS!\n", 21);
-	m_Logger.Write (FromKernel, LogNotice, "Just type something!");
+	//s_pThis->m_Screen.Write ("welcome to PegasOS!\n", 21);
+	//m_Logger.Write (FromKernel, LogNotice, "Just type something!");
+	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername: ",67);
 	//commenceLogin();
-	PegasosShell->DisplayUserWithDirectory();
+	//PegasosShell->DisplayUserWithDirectory();
 	
 	// this is the main loop for the OS
 	for (unsigned nCount = 0; m_ShutdownMode == ShutdownNone; nCount++)
@@ -282,7 +272,7 @@ TShutdownMode CKernel::Run (void)
 	// Unmount file system
 	if (f_mount (0, DRIVE, 0) != FR_OK)
 	{
-		m_Logger.Write (FromKernel, LogPanic, "Cannot unmount drive: %s", DRIVE);
+		//m_Logger.Write (FromKernel, LogPanic, "Cannot unmount drive: %s", DRIVE);
 	}
 
 	return m_ShutdownMode;
@@ -290,28 +280,244 @@ TShutdownMode CKernel::Run (void)
 
 void CKernel::commenceLogin()
 {
-	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\n Please enter a Username for yourself.\nUsername: ",76);
-	s_pThis->m_Timer.MsDelay (5000);
-	/*CUSBKeyboardDevice *testKeyboard = (CUSBKeyboardDevice *) s_pThis->m_DeviceNameService.GetDevice ("ukbd1", FALSE);
-	if (testKeyboard == 0)
+	char userDirectory[]="SD:/users", _tempFileName[]="";
+	char Buffer[100];
+	if(_OffBoot == 0)
 	{
-		s_pThis->m_Logger.Write (FromKernel, LogError, "Keyboard not found");
-		//return ShutdownHalt;
+		DIR Directory;
+		FILINFO FileInfo;
+		FRESULT Result = f_findfirst (&Directory, &FileInfo, userDirectory, "*");
+		for (unsigned i = 0; Result == FR_OK && FileInfo.fname[0]; i++)
+		{
+			if (!(FileInfo.fattrib & (AM_HID | AM_SYS)))
+			{
+				CString FileName;
+				FileName.Format ("%-19s", FileInfo.fname);
+				strcpy(_tempFileName,FileName);
+				EditFileName(_tempFileName);
+				
+				if(strcmp(_inputUsername,_tempFileName)==0)
+				{
+					_UserNameMatch=1;
+				}
+			}
+
+			Result = f_findnext (&Directory, &FileInfo);
+		}
+		if(_UserNameMatch==1)
+		{
+			s_pThis->m_Screen.Write ("Please enter your password:  ",30);
+			_OffBoot=2;
+		}
+		else if(_UserNameMatch==0)
+		{
+			s_pThis->m_Screen.Write ("There is no account for that Username. Would you like to create one?  ",71);
+			strcpy(_inputUsername,"");
+			_OffBoot=1;
+		}
 	}
-	#if 1	// set to 0 to test raw mode
-		pKeyboard->RegisterShutdownHandler (ShutdownHandler);
-		pKeyboard->RegisterKeyPressedHandler (KeyPressedHandler);
-	#else
-		pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
-	#endif*/
+	else if( _OffBoot ==1)
+	{
+		if(strcmp(_userResponse,"no")==0)
+		{
+			s_pThis->m_Screen.Write("Please reenter a Username:  ",29);
+			_OffBoot=0;
+		}
+		else if(strcmp(_userResponse,"yes")==0)
+		{
+			s_pThis->m_Screen.Write("Please enter your desired Username:  ",38);
+			_OffBoot=3;
+		}
+		strcpy(_userResponse,"");
+	}
+	else if(_OffBoot == 2)
+	{
+		strcat(userDirectory,"/");
+		strcat(userDirectory,_inputUsername);
+		strcat(userDirectory,"/");
+		strcat(userDirectory,_inputUsername);
+		strcat(userDirectory,".txt");
+		FIL passwordFILE;
+		FRESULT Result = f_open (&passwordFILE, userDirectory, FA_READ | FA_OPEN_EXISTING);
+		if (Result != FR_OK)
+		{
+			s_pThis->m_Screen.Write("Cannot open the file!\n",22);
+		}
+		
+		unsigned nBytesRead;
+		while ((Result = f_read (&passwordFILE, Buffer, sizeof Buffer, &nBytesRead)) == FR_OK)
+		{
+			if (nBytesRead < sizeof Buffer)		// EOF?
+			{
+				break;
+			}
+		}
+		if(strcmp(Buffer,_inputPassword)==0)
+		{
+			s_pThis->m_Screen.Write("Successfully logged in!\n",24);
+			strcpy(userDirectory,"SD:/users/");
+			strcat(userDirectory,_inputUsername);
+			FRESULT _Result=f_chdir(userDirectory);
+			if (_Result != FR_OK)
+			{
+				s_pThis->m_Screen.Write("The file path was incorrect\n", 28);
+			}
+			PegasosShell->EditUserName(_inputUsername);
+			PegasosShell->DisplayUserWithDirectory();
+			_OffBoot=5;
+		}
+		else if(strcmp(Buffer,_inputPassword)!=0)
+		{
+			s_pThis->m_Screen.Write("The password does not match!\n",29);
+			s_pThis->m_Screen.Write("Please reenter your password:  ",32);
+			strcpy(_inputPassword,"");
+			_OffBoot=2;
+		}
+		if (f_close (&passwordFILE) != FR_OK)
+		{
+			s_pThis->m_Screen.Write("Cannot close the file!\n",22);
+		}
+	}
+	else if(_OffBoot==3)
+	{
+		// This will create the directory and user file.
+		strcpy(userDirectory,"SD:/users/");
+		strcat(userDirectory,_inputUsername);
+		FRESULT _Result=f_mkdir(userDirectory);
+		if (_Result != FR_OK)
+		{
+			s_pThis->m_Screen.Write("The sub-directory wasn't able to be made.\n", 42);
+		}
+		s_pThis->m_Screen.Write("Username was created. Now please enter a password: ",52);
+		_OffBoot=4;
+	}
+	else if(_OffBoot==4)	//This will take the password given and then write it to their file and then log them in
+	{
+		strcat(userDirectory,"/");
+		strcat(userDirectory,_inputUsername);
+		strcat(userDirectory,"/");
+		strcat(userDirectory,_inputUsername);
+		strcat(userDirectory,".txt");
+		FIL _NewFIle;
+		int Pass=1;
+		FRESULT Result = f_open (&_NewFIle, userDirectory, FA_WRITE | FA_CREATE_ALWAYS);
+		if (Result != FR_OK)
+		{
+			s_pThis->m_Screen.Write("Cannot create user file.\n",25);
+			Pass=0;
+		}
+		CString Msg;
+		Msg.Format ("%s", _inputPassword);
+		unsigned nBytesWritten;
+		if (f_write(&_NewFIle, (const char *) Msg, Msg.GetLength (), &nBytesWritten) != FR_OK|| nBytesWritten != Msg.GetLength ())
+		{
+			s_pThis->m_Screen.Write("Cannot write to user file.\n",25);
+			Pass=0;
+		}
+		
+		if (f_close (&_NewFIle) != FR_OK)
+		{
+			s_pThis->m_Screen.Write("Cannot close user file.\n",24);
+			Pass=0;
+		}
+		if(Pass==1)
+		{
+			s_pThis->m_Screen.Write("Successfully logged in!\n",24);
+			PegasosShell->EditUserName(_inputUsername);
+			PegasosShell->DisplayUserWithDirectory();
+			_OffBoot=5;
+		}
+	}
+
+}
+
+void CKernel::EditFileName(char* tempFileName)
+{
+	int length=strlen(tempFileName), index=0;
+	while(index<length)
+	{
+		if(tempFileName[index]==32)
+		{
+			tempFileName[index]='\0';
+			break;
+		}
+		index++;
+	}
 }
 
 void CKernel::KeyPressedHandler (const char *pString)
 {
 	assert (s_pThis != 0);
-	s_pThis->m_Screen.Write (pString, strlen (pString));
-	// CommandLineIn(pString);
-	PegasosShell->CommandLineIn(pString);
+	if(_OffBoot!=2 && _OffBoot!=4)
+		s_pThis->m_Screen.Write (pString, strlen (pString));
+	if(_OffBoot != 5)
+	{
+		LoginInput(pString);
+	}
+	else if(_OffBoot == 5)
+	{
+		PegasosShell->CommandLineIn(pString);
+	}
+}
+
+void CKernel::LoginInput(const char* keyInput)
+{
+	int stringLength=0;
+	if(_OffBoot == 0)
+	{
+		if (strcmp(keyInput, "\n") == 0)
+		{
+			stringLength = strlen(_inputUsername);
+			_inputUsername[stringLength] = '\0';
+			commenceLogin();
+		}
+		if (strcmp(keyInput,"\n") != 0)
+			strcat(_inputUsername, keyInput);
+	}
+	else if(_OffBoot == 1)
+	{
+		if (strcmp(keyInput, "\n") == 0)
+		{
+			stringLength = strlen(_userResponse);
+			_userResponse[stringLength] = '\0';
+			commenceLogin();
+		}
+		if (strcmp(keyInput,"\n") != 0)
+			strcat(_userResponse, keyInput);
+	}
+	else if(_OffBoot == 2)
+	{
+		if (strcmp(keyInput, "\n") == 0)
+		{
+			stringLength = strlen(_inputPassword);
+			_inputPassword[stringLength] = '\0';
+			commenceLogin();
+		}
+		if (strcmp(keyInput,"\n") != 0)
+			strcat(_inputPassword, keyInput);
+	}
+	else if(_OffBoot==3)
+	{
+		if (strcmp(keyInput, "\n") == 0)
+		{
+			stringLength = strlen(_inputUsername);
+			_inputUsername[stringLength] = '\0';
+			commenceLogin();
+		}
+		if (strcmp(keyInput,"\n") != 0)
+			strcat(_inputUsername, keyInput);
+	}
+	else if(_OffBoot==4)
+	{
+		if (strcmp(keyInput, "\n") == 0)
+		{
+			stringLength = strlen(_inputPassword);
+			_inputPassword[stringLength] = '\0';
+			commenceLogin();
+		}
+		if (strcmp(keyInput,"\n") != 0)
+			strcat(_inputPassword, keyInput);
+	}
 }
 
 void CKernel::ShutdownHandler (void)
