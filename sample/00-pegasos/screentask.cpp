@@ -25,6 +25,7 @@ CScreenTask::CScreenTask (unsigned nTaskID, CScreenDevice *pScreen)
 :	m_nTaskID (nTaskID),
 	m_pScreen (pScreen)
 {
+	
 }
 
 CScreenTask::~CScreenTask (void)
@@ -42,7 +43,20 @@ void CScreenTask::Run (void)
 		{
 			Message.Append ("    ");
 		}
-		Message.Append ("****\n");
+		Message.Append ("This task is priority");
+		if(m_nTaskID == 1){
+			Message.Append (" 1");
+		}
+		if(m_nTaskID == 2){
+			Message.Append (" 2");
+		}
+		if(m_nTaskID == 3){
+			Message.Append (" 3");
+		}
+		if(m_nTaskID == 4){
+			Message.Append (" 4");
+		}
+		Message.Append("\n");
 
 		if(CScheduler::Get ()->CScheduler::getPrint()){
 			m_pScreen->Write (Message, Message.GetLength ());

@@ -33,6 +33,7 @@
 CPrimeTask::CPrimeTask (CScreenDevice *pScreen)
 :	m_pScreen (pScreen)
 {
+	SetWeight(3);
 }
 
 CPrimeTask::~CPrimeTask (void)
@@ -72,7 +73,7 @@ void CPrimeTask::Run (void)
 		if (IsPrime (i))
 		{
 			CString Message;
-			Message.Format ("Largest calculated prime number is %u.\n", i);
+			Message.Format ("This Task is priority 3. Largest calculated prime number is %u.\n", i);
 
 			if(CScheduler::Get ()->CScheduler::getPrint()){
 				m_pScreen->Write (Message, Message.GetLength ());

@@ -71,6 +71,7 @@ private:
 private:
 	boolean print;
 	CTask *m_pTask[MAX_TASKS];
+	CTask *m2_pTask[MAX_TASKS];
 	unsigned m_nTasks;
 
 	CTask *m_pCurrent;

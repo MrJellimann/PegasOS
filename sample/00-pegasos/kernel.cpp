@@ -270,11 +270,13 @@ TShutdownMode CKernel::Run (void)
 	m_Logger.Write (FromKernel, LogNotice, "Just type something!");
 	//commenceLogin();
 	//PegasosShell->DisplayUserWithDirectory();
-
+	
+	CScreenTask *temp;
 	// start tasks
 	for (unsigned nTaskID = 1; nTaskID <= 4; nTaskID++)
 	{
-		new CScreenTask (nTaskID, &m_Screen);
+		temp = new CScreenTask (nTaskID, &m_Screen);
+		temp->SetWeight(nTaskID);
 	}
 
 	new CPrimeTask (&m_Screen);
