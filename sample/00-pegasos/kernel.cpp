@@ -239,7 +239,6 @@ TShutdownMode CKernel::Run (void)
 	{
 		//m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
 	}
-	commenceLogin();
 
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) m_DeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
@@ -267,8 +266,8 @@ TShutdownMode CKernel::Run (void)
 	new CPrimeTask (&m_Screen);
 	new CLEDTask (&m_ActLED);
   
-  // start login
-	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername:  ",67);
+  	// start login
+	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername:  ", 67);
 	
 	// this is the main loop for the OS
 	for (unsigned nCount = 0; m_ShutdownMode == ShutdownNone; nCount++)
