@@ -73,8 +73,6 @@ private:
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
 	static void commenceLogin();
-	static void LoginInput(const char* keyInput);
-	static void EditFileName(char* tempFileName);
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
 	
@@ -90,6 +88,11 @@ private:
 	CInterruptSystem		m_Interrupt;
 	CTimer					m_Timer;
 	CLogger					m_Logger;
+<<<<<<< HEAD
+=======
+	CScheduler				m_Scheduler;
+	CSynchronizationEvent	m_Event;
+>>>>>>> parent of 0fe681b... Merge branch 'master' into revzet_branch
 	CUSBHCIDevice			m_USBHCI;
 	CEMMCDevice				m_EMMC;
 	volatile TShutdownMode 	m_ShutdownMode;
