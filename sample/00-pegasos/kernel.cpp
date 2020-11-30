@@ -251,11 +251,7 @@ TShutdownMode CKernel::Run (void)
 #else
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
 #endif
-	//s_pThis->m_Screen.Write ("welcome to PegasOS!\n", 21);
-	//m_Logger.Write (FromKernel, LogNotice, "Just type something!");
-	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername: ",67);
-	//commenceLogin();
-	//PegasosShell->DisplayUserWithDirectory();
+	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername:  ",67);
 	
 	// this is the main loop for the OS
 	for (unsigned nCount = 0; m_ShutdownMode == ShutdownNone; nCount++)
@@ -306,26 +302,26 @@ void CKernel::commenceLogin()
 		}
 		if(_UserNameMatch==1)
 		{
-			s_pThis->m_Screen.Write ("Please enter your password:  ",30);
+			s_pThis->m_Screen.Write ("Password:  ",12);
 			_OffBoot=2;
 		}
 		else if(_UserNameMatch==0)
 		{
-			s_pThis->m_Screen.Write ("There is no account for that Username. Would you like to create one?  ",71);
+			s_pThis->m_Screen.Write ("User does not exist. Would you like to create one?  ",53);
 			strcpy(_inputUsername,"");
 			_OffBoot=1;
 		}
 	}
 	else if( _OffBoot ==1)
 	{
-		if(strcmp(_userResponse,"no")==0)
+		if((strcmp(_userResponse,"no")==0) || (strcmp(_userResponse,"n")==0))
 		{
-			s_pThis->m_Screen.Write("Please reenter a Username:  ",29);
+			s_pThis->m_Screen.Write("Re-enter Username:  ",21);
 			_OffBoot=0;
 		}
-		else if(strcmp(_userResponse,"yes")==0)
+		else if((strcmp(_userResponse,"yes")==0) || (strcmp(_userResponse,"y")==0))
 		{
-			s_pThis->m_Screen.Write("Please enter your desired Username:  ",38);
+			s_pThis->m_Screen.Write("Enter desired Username:  ",26);
 			_OffBoot=3;
 		}
 		strcpy(_userResponse,"");
@@ -368,8 +364,8 @@ void CKernel::commenceLogin()
 		}
 		else if(strcmp(Buffer,_inputPassword)!=0)
 		{
-			s_pThis->m_Screen.Write("The password does not match!\n",29);
-			s_pThis->m_Screen.Write("Please reenter your password:  ",32);
+			s_pThis->m_Screen.Write("Password mismatch.\n",21);
+			s_pThis->m_Screen.Write("Re-enter password:  ",21);
 			strcpy(_inputPassword,"");
 			_OffBoot=2;
 		}

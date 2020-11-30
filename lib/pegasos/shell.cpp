@@ -20,9 +20,9 @@ char _commandParameterTwo[PMAX_INPUT_LENGTH];
 char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
-char _helpMessage1[] = "This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
-char _helpMessage2[] = "\n\tcreatefile\n\tcurrentdir\n\tdelete\n\tdeletedir\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlogin\n\tmount\n\tmove";
-char _helpMessage3[] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n";
+char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
+char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tcurrentdir\n\tdelete\n\tdeletedir\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlogin\n\tmount\n\tmove";
+char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
 TScreenStatus stat;
@@ -142,21 +142,26 @@ void PShell::CommandMatch(const char *commandName)
 	{
         assert(pKernel != 0);
 		char _FilePath[]="";
-		strcat(_FilePath,_directory);
-		strcat(_FilePath,"/");
-		strcat(_FilePath,_commandParameterOne);
-		FRESULT _Result=f_chdir(_FilePath);
-		if (_Result != FR_OK)
+		if(strcmp(_commandParameterOne,"")!=0)
 		{
-			pKernel->GetKernelScreenDevice()->Write("The file path was incorrect\n", 28);
-			//pKernel->GetKernelScreenDevice()->Write(_FilePath,strlen(_FilePath));
+			strcat(_FilePath,_directory);
+			strcat(_FilePath,"/");
+			strcat(_FilePath,_commandParameterOne);
+			FRESULT _Result=f_chdir(_FilePath);
+			if (_Result != FR_OK)
+			{
+				pKernel->GetKernelScreenDevice()->Write("The file path was incorrect\n", 28);
+				//pKernel->GetKernelScreenDevice()->Write(_FilePath,strlen(_FilePath));
+			}
+			if(_Result == FR_OK)
+			{
+				strcpy(_directory,_FilePath);
+				FixWorkingDirectory();
+				//pKernel->GetKernelScreenDevice()->Write(, strlen(currentLine));
+			}
 		}
-		if(_Result == FR_OK)
-		{
-			strcpy(_directory,_FilePath);
-			//pKernel->GetKernelScreenDevice()->Write(, strlen(currentLine));
-		}
-		FixWorkingDirectory();
+		
+		
 	}
     // Create File
 	else if (strcmp("createfile", commandName) == 0)
@@ -208,7 +213,7 @@ void PShell::CommandMatch(const char *commandName)
 		}
 	}
 	// Clear
-	else if (strcmp("createdir", commandName) == 0)
+	else if (strcmp("clear", commandName) == 0)
 	{
 		assert(pKernel != 0);
 	}
@@ -252,7 +257,7 @@ void PShell::CommandMatch(const char *commandName)
 		}
 	}
     // Current Directory
-	else if (strcmp("currentdir", commandName) == 0)
+	else if (strcmp("listdir", commandName) == 0)
 	{
 		pKernel->GetKernelScreenDevice()->Write("Current Working Directory is: ",31);
 		pKernel->GetKernelScreenDevice()->Write(_directory,strlen(_directory));
@@ -336,11 +341,6 @@ void PShell::CommandMatch(const char *commandName)
 		
 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
-	}
-	// Find
-	else if (strcmp("find", commandName) == 0)
-	{
-		assert(pKernel != 0);
 	}
 	// Head
 	else if(strcmp("head", commandName)==0)
