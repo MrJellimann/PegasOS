@@ -77,6 +77,8 @@ private:
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
 	static void commenceLogin();
+	static void LoginInput(const char* keyInput);
+	static void EditFileName(char* tempFileName);
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
 	
@@ -94,6 +96,7 @@ private:
 	CLogger					m_Logger;
 	CScheduler				m_Scheduler;
 	CSynchronizationEvent	m_Event;
+  
 	CUSBHCIDevice			m_USBHCI;
 	CEMMCDevice				m_EMMC;
 	volatile TShutdownMode 	m_ShutdownMode;
