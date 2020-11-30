@@ -21,9 +21,9 @@ char _commandParameterTwo[PMAX_INPUT_LENGTH];
 char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
-char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
-char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdisplaytasks\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlistdir\n\tlogin\n\tmount\n\tmove";
-char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n";
+char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
+char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\tfind\n\thead\n\thello\n\thelp\n\tlistdir\n\tlogin\n\tmount\n\tmove";
+char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\tterminatetask\n\tusertext\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
 TScreenStatus stat;
@@ -559,6 +559,16 @@ void PShell::CommandMatch(const char *commandName)
 			strcpy(digits,"");
 		}
 		SetColor(userRed,userGreen,userBlue);
+	}
+	else if (strcmp("systeminfo", commandName) == 0)
+	{
+		CMachineInfo* _info = pKernel->GetKernelInfo();
+
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Device: %s", _info->GetMachineName());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "SoC: %s", _info->GetSoCName());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Model #: %i", _info->GetModelMajor());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "RAM: %iGB", _info->GetRAMSize());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i", _info->GetClockRate(CLOCK_ID_ARM));
 	}
 
 	// strcpy(_mainCommandName, "");

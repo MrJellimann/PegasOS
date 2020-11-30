@@ -549,3 +549,18 @@ CLogger *CKernel::GetKernelLogger()
 {
 	return &(s_pThis->m_Logger);
 }
+
+CScheduler *CKernel::GetKernelScheduler()
+{
+	return &(s_pThis->m_Scheduler);
+}
+
+CSynchronizationEvent *CKernel::GetKernelSyncEvent()
+{
+	return &(s_pThis->m_Event);
+}
+
+CMachineInfo *CKernel::GetKernelInfo()
+{
+	return &(s_pThis->m_Info);
+}
