@@ -2,7 +2,7 @@
 // kernel.h
 //
 // Circle - A C++ bare metal environment for Raspberry Pi
-// Copyright (C) 2014-2017  R. Stange <rsta2@o2online.de>
+// Copyright (C) 2015-2018  R. Stange <rsta2@o2online.de>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-// this is the basic circle kernel information for the OS to boot 
 #ifndef _kernel_h
 #define _kernel_h
 
@@ -31,9 +30,9 @@
 #include <circle/interrupt.h>
 #include <circle/timer.h>
 #include <circle/logger.h>
-#include <circle/usb/usbhcidevice.h>
 #include <circle/sched/scheduler.h>
 #include <circle/sched/synchronizationevent.h>
+#include <circle/usb/usbhcidevice.h>
 #include <SDCard/emmc.h>
 #include <fatfs/ff.h>
 #include <circle/types.h>
@@ -70,33 +69,31 @@ public:
 	static CInterruptSystem *GetKernelInterruptSystem();
 	static CTimer *GetKernelTimer();
 	static CLogger *GetKernelLogger();
-
+	
 private:
 	static void TimerHandler (TKernelTimerHandle hTimer, void *pParam, void *pContext);
 
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
 	static void commenceLogin();
-	static void LoginInput(const char* keyInput);
-	static void EditFileName(char* tempFileName);
 
 	static void KeyStatusHandlerRaw (unsigned char ucModifiers, const unsigned char RawKeys[6]);
-	
+
 private:
 	// do not change this order
-	CMemorySystem			m_Memory;
-	CActLED					m_ActLED;
-	CKernelOptions			m_Options;
-	CDeviceNameService		m_DeviceNameService;
-	CScreenDevice			m_Screen;
-	CSerialDevice			m_Serial;
-	CExceptionHandler		m_ExceptionHandler;
-	CInterruptSystem		m_Interrupt;
-	CTimer					m_Timer;
-	CLogger					m_Logger;
-	CScheduler				m_Scheduler;
+	CMemorySystem		m_Memory;
+	CActLED			m_ActLED;
+	CKernelOptions		m_Options;
+	CDeviceNameService	m_DeviceNameService;
+	CScreenDevice		m_Screen;
+	CSerialDevice		m_Serial;
+	CExceptionHandler	m_ExceptionHandler;
+	CInterruptSystem	m_Interrupt;
+	CTimer			m_Timer;
+	CLogger			m_Logger;
+
+	CScheduler		m_Scheduler;
 	CSynchronizationEvent	m_Event;
-  
 	CUSBHCIDevice			m_USBHCI;
 	CEMMCDevice				m_EMMC;
 	volatile TShutdownMode 	m_ShutdownMode;
