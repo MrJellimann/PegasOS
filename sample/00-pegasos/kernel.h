@@ -37,6 +37,7 @@
 #include <SDCard/emmc.h>
 #include <fatfs/ff.h>
 #include <circle/types.h>
+#include <circle/machineinfo.h>
 
 #define MAX_INPUT_LENGTH 256
 #define MAX_DIRECTORY_LENGTH 1024
@@ -70,6 +71,9 @@ public:
 	static CInterruptSystem *GetKernelInterruptSystem();
 	static CTimer *GetKernelTimer();
 	static CLogger *GetKernelLogger();
+	static CScheduler *GetKernelScheduler();
+	static CSynchronizationEvent *GetKernelSyncEvent();
+	static CMachineInfo *GetKernelInfo();
 
 private:
 	static void TimerHandler (TKernelTimerHandle hTimer, void *pParam, void *pContext);
@@ -96,6 +100,7 @@ private:
 	CLogger					m_Logger;
 	CScheduler				m_Scheduler;
 	CSynchronizationEvent	m_Event;
+	CMachineInfo			m_Info;
   
 	CUSBHCIDevice			m_USBHCI;
 	CEMMCDevice				m_EMMC;
