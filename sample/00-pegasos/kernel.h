@@ -32,8 +32,6 @@
 #include <circle/timer.h>
 #include <circle/logger.h>
 #include <circle/usb/usbhcidevice.h>
-#include <circle/sched/scheduler.h>
-#include <circle/sched/synchronizationevent.h>
 #include <SDCard/emmc.h>
 #include <fatfs/ff.h>
 #include <circle/types.h>
@@ -72,8 +70,6 @@ public:
 	static CLogger *GetKernelLogger();
 
 private:
-	static void TimerHandler (TKernelTimerHandle hTimer, void *pParam, void *pContext);
-
 	static void KeyPressedHandler (const char *pString);
 	static void ShutdownHandler (void);
 	static void commenceLogin();
@@ -94,9 +90,6 @@ private:
 	CInterruptSystem		m_Interrupt;
 	CTimer					m_Timer;
 	CLogger					m_Logger;
-	CScheduler				m_Scheduler;
-	CSynchronizationEvent	m_Event;
-  
 	CUSBHCIDevice			m_USBHCI;
 	CEMMCDevice				m_EMMC;
 	volatile TShutdownMode 	m_ShutdownMode;

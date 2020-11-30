@@ -37,9 +37,6 @@ public:
 	void Sleep (unsigned nSeconds);
 	void MsSleep (unsigned nMilliSeconds);
 	void usSleep (unsigned nMicroSeconds);
-	void turnPrintOff();
-	void turnPrintOn();
-	boolean getPrint();
 
 	CTask *GetCurrentTask (void);
 
@@ -69,9 +66,7 @@ private:
 	unsigned GetNextTask (void);		// returns index into m_pTask or MAX_TASKS if no task was found
 
 private:
-	boolean print;
 	CTask *m_pTask[MAX_TASKS];
-	CTask *m2_pTask[MAX_TASKS];
 	unsigned m_nTasks;
 
 	CTask *m_pCurrent;

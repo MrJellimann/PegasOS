@@ -11,8 +11,6 @@
 #include <SDCard/emmc.h>
 #include <fatfs/ff.h>
 #include <../sample/00-pegasos/kernel.h>
-#include <circle/sched/scheduler.h>
-#include <circle/sched/synchronizationevent.h>
 
 #define PMAX_INPUT_LENGTH 256
 #define PMAX_DIRECTORY_LENGTH 1024

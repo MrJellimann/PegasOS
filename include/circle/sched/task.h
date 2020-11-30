@@ -39,14 +39,12 @@ class CScheduler;
 class CTask
 {
 public:
-	
-
 	CTask (unsigned nStackSize = TASK_STACK_SIZE);		// nStackSize = 0 for main task
 	virtual ~CTask (void);
 
+	int weight; //
+
 	virtual void Run (void);
-	void SetWeight(int w) {weight = w;};
-	int GetWeight(void) {return weight;}
 
 	void Terminate (void);			// callable from this task only
 	void WaitForTermination (void);		// callable from other task only
@@ -81,8 +79,7 @@ private:
 	u8		   *m_pStack;
 	void		   *m_pUserData[TASK_USER_DATA_SLOTS];
 	CSynchronizationEvent m_Event;
-	int weight; 
-	
+
 };
 
 #endif

@@ -38,7 +38,6 @@ CScheduler::CScheduler (void)
 
 	m_pCurrent = new CTask (0);		// main task currently running
 	assert (m_pCurrent != 0);
-	print = false;
 
 	// TODO: make comparison function for PQ
 	// TODO: instantiate all the queues
@@ -143,29 +142,21 @@ void CScheduler::RegisterTaskTerminationHandler (TSchedulerTaskHandler *pHandler
 }
 
 
-
+// TODO: incorporate queues- it is currently FIFO into an array
+// we want waitingQ and insertQ to feed into userQ
+// find way to separate sys tasks from array also
 void CScheduler::AddTask (CTask *pTask)
 {
 	assert (pTask != 0);
-	// add according to weight if weight isnt zero
+
 	unsigned i;
 	for (i = 0; i < m_nTasks; i++)
 	{
-		
-		if(pTask->GetWeight() == 0){
-			if (m_pTask[i] == 0)
-			{
-				m_pTask[i] = pTask;
-
-				return;
-			}
-			continue;
-		}
-		if(pTask->GetWeight() > m_pTask[i]->GetWeight()){
-			// swap tasks to go down queue
-			CTask *tempTask = m_pTask[i];
+		if (m_pTask[i] == 0)
+		{
 			m_pTask[i] = pTask;
-			pTask = tempTask;
+
+			return;
 		}
 	}
 
@@ -290,22 +281,4 @@ CScheduler *CScheduler::Get (void)
 {
 	assert (s_pThis != 0);
 	return s_pThis;
-}
-
-
-void CScheduler::turnPrintOff()
-{
-	print = false;
-	return;
-}
-
-void CScheduler::turnPrintOn()
-{
-	print = true;
-	return;
-}
-
-boolean CScheduler::getPrint()
-{
-	return print;
 }

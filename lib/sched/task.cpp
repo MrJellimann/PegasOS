@@ -27,7 +27,6 @@ CTask::CTask (unsigned nStackSize)
 	m_nStackSize (nStackSize),
 	m_pStack (0)
 {
-	weight = 0;
 	for (unsigned i = 0; i < TASK_USER_DATA_SLOTS; i++)
 	{
 		m_pUserData[i] = 0;
