@@ -11,6 +11,7 @@ CKernel *pKernel = 0;
 PShell *PShell::s_pThis = 0;
 
 static const char _FromKernel[] = "kernel";
+
 int _stringLen, _globalIndex=0, dirRed=31, dirGreen=31, dirBlue=31, userRed=31, userGreen=31, userBlue=31;//, _OffBoot=0;
 char _inputByUser[200], _message[PMAX_INPUT_LENGTH]="Command was found!"; /////////
 char _directory[PMAX_DIRECTORY_LENGTH]="SD:";
@@ -46,6 +47,10 @@ void PShell::AssignKernel(CKernel* _kernel)
 
 void PShell::CommandLineIn(const char* keyInput)
 {
+    // pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "\nAttempting to read char into PSHELL...\n");
+	// assert (pKernel != 0);
+    // pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Successfully asserted kernel exists.\n");
+
 	if (strcmp(keyInput, "\n") == 0)
 	{
 		_stringLen = strlen(_inputByUser);
@@ -141,6 +146,10 @@ void PShell::CommandMatch(const char *commandName)
 	if (strcmp("changedir", commandName) == 0)
 	{
         assert(pKernel != 0);
+    
+    // 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
+    // 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
+    
 		char _FilePath[]="";
 		if(strcmp(_commandParameterOne,"")!=0)
 		{
@@ -161,7 +170,6 @@ void PShell::CommandMatch(const char *commandName)
 			}
 		}
 		
-		
 	}
     // Create File
 	else if (strcmp("createfile", commandName) == 0)
@@ -170,6 +178,7 @@ void PShell::CommandMatch(const char *commandName)
 		strcat(fileName, _directory);
 		strcat(fileName,"/");
 		strcat(fileName, _commandParameterOne);
+    
 		FRESULT Result = f_open (&_NewFIle, fileName, FA_WRITE | FA_CREATE_ALWAYS);
 		if (Result != FR_OK)
 		{
@@ -266,6 +275,7 @@ void PShell::CommandMatch(const char *commandName)
 		DIR Directory;
 		FILINFO FileInfo;
 		FRESULT Result = f_findfirst (&Directory, &FileInfo, _directory, "*");
+    
 		for (unsigned i = 0; Result == FR_OK && FileInfo.fname[0]; i++)
 		{
 			if (!(FileInfo.fattrib & (AM_HID | AM_SYS)))
@@ -280,6 +290,7 @@ void PShell::CommandMatch(const char *commandName)
 					pKernel->GetKernelScreenDevice()->Write ("\n", 1);
 				}
 			}
+
 			Result = f_findnext (&Directory, &FileInfo);
 		}
 	}
@@ -449,6 +460,15 @@ void PShell::CommandMatch(const char *commandName)
     {
         pKernel->SystemOff();
     }
+  // Display Tasks/Scheduler Demo
+	else if(strcmp("displaytasks", commandName) == 0)
+  {
+		CScheduler::Get ()->CScheduler::turnPrintOn();
+	}
+	else if(strcmp("s", commandName) == 0)
+  {
+		CScheduler::Get ()->CScheduler::turnPrintOff();
+	}
 	// Tail
 	else if (strcmp("tail", commandName) == 0)
 	{
@@ -528,7 +548,6 @@ void PShell::CommandMatch(const char *commandName)
 		}
 		SetColor(userRed,userGreen,userBlue);
 	}
-
 	strcpy(_mainCommandName, "");
 }
 

@@ -19,6 +19,9 @@
 //
 // this is the inital kernel to get the keyboard running. PegasOS main functions should go here
 #include "kernel.h"
+#include "screentask.h"
+#include "primetask.h"
+#include "ledtask.h"
 #include <circle/usb/usbkeyboard.h>
 #include <circle/string.h>
 #include <circle/util.h>
@@ -236,6 +239,7 @@ TShutdownMode CKernel::Run (void)
 	{
 		//m_Logger.Write (FromKernel, LogPanic, "Cannot open file: %s", FILENAME);
 	}
+	commenceLogin();
 
 	CUSBKeyboardDevice *pKeyboard = (CUSBKeyboardDevice *) m_DeviceNameService.GetDevice ("ukbd1", FALSE);
 	if (pKeyboard == 0)
@@ -251,6 +255,19 @@ TShutdownMode CKernel::Run (void)
 #else
 	pKeyboard->RegisterKeyStatusHandlerRaw (KeyStatusHandlerRaw);
 #endif
+	
+	CScreenTask *temp;
+	// start tasks
+	for (unsigned nTaskID = 1; nTaskID <= 4; nTaskID++)
+	{
+		temp = new CScreenTask (nTaskID, &m_Screen);
+		temp->SetWeight(nTaskID);
+	}
+
+	new CPrimeTask (&m_Screen);
+	new CLEDTask (&m_ActLED);
+  
+  // start login
 	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername:  ",67);
 	
 	// this is the main loop for the OS
@@ -263,6 +280,19 @@ TShutdownMode CKernel::Run (void)
 		
 		m_Screen.Rotor (0, nCount);
 		m_Timer.MsDelay (100);
+
+		
+		//main task
+		static const char Message[] = "Main ****\n";
+		if(CScheduler::Get ()->CScheduler::getPrint()){
+			m_Screen.Write (Message, sizeof Message-1);
+		}
+
+		m_Event.Clear ();
+		m_Timer.StartKernelTimer (.5 * HZ, TimerHandler, this);
+
+		m_Event.Wait ();
+		
 	}
 
 	// Unmount file system
@@ -272,6 +302,14 @@ TShutdownMode CKernel::Run (void)
 	}
 
 	return m_ShutdownMode;
+}
+
+void CKernel::TimerHandler (TKernelTimerHandle hTimer, void *pParam, void *pContext)
+{
+	CKernel *pThis = (CKernel *) pParam;
+	assert (pThis != 0);
+
+	pThis->m_Event.Set ();
 }
 
 void CKernel::commenceLogin()
@@ -444,6 +482,7 @@ void CKernel::EditFileName(char* tempFileName)
 void CKernel::KeyPressedHandler (const char *pString)
 {
 	assert (s_pThis != 0);
+  
 	if(_OffBoot!=2 && _OffBoot!=4)
 		s_pThis->m_Screen.Write (pString, strlen (pString));
 	if(_OffBoot != 5)
