@@ -22,7 +22,7 @@ char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
 char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tbackgroundpalette\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
-char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tcurrentdir\n\tdelete\n\tdeletedir\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlogin\n\tmount\n\tmove";
+char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdisplaytasks\n\techo\n\tfilespace\n\tfind\n\thead\n\thello\n\thelp\n\tlistdir\n\tlogin\n\tmount\n\tmove";
 char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\ttermiantetask\n\ttextpalette\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
@@ -150,8 +150,9 @@ void PShell::CommandMatch(const char *commandName)
     // 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
     // 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
     
-		char _FilePath[]="";
-		if(strcmp(_commandParameterOne,"")!=0)
+		char _FilePath[MAX_DIRECTORY_LENGTH] = "";
+		
+		if (strcmp(_commandParameterOne, "") != 0)
 		{
 			strcat(_FilePath,_directory);
 			strcat(_FilePath,"/");
@@ -162,7 +163,7 @@ void PShell::CommandMatch(const char *commandName)
 				pKernel->GetKernelScreenDevice()->Write("The file path was incorrect\n", 28);
 				//pKernel->GetKernelScreenDevice()->Write(_FilePath,strlen(_FilePath));
 			}
-			if(_Result == FR_OK)
+			else if(_Result == FR_OK) // was just if before
 			{
 				strcpy(_directory,_FilePath);
 				FixWorkingDirectory();
@@ -417,28 +418,38 @@ void PShell::CommandMatch(const char *commandName)
 		assert(pKernel != 0);
 		int check;
 		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"We entered head command with |%s| |%s|\n",_commandParameterOne,_commandParameterTwo);
-		char mainFileName[] = "", newFileName[MAX_INPUT_LENGTH]="", buffer[MAX_INPUT_LENGTH]="";
+		// mainFileName -> file you're moving
+		// newFileName -> destination you're moving to
+		char mainFileName[MAX_DIRECTORY_LENGTH] = "", newFileName[MAX_INPUT_LENGTH] = "", buffer[MAX_INPUT_LENGTH] = "";
+		
 		strcpy(mainFileName,_directory);
 		strcat(mainFileName,"/");
 		strcat(mainFileName,_commandParameterOne);
+
 		strcpy(newFileName,_commandParameterTwo);
 		strcat(newFileName,"/");
 		strcat(newFileName,_commandParameterOne);
+
 		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The mainFileName is: |%s| The newFileName is: |%s|\n",mainFileName,newFileName);
 		FRESULT mainResult = f_open (&_ReadFile, mainFileName, FA_READ | FA_OPEN_EXISTING);
-		FRESULT newResult = f_open (&_NewFIle, newFileName, FA_WRITE | FA_CREATE_ALWAYS);
 		if (mainResult != FR_OK)
 		{
 			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", mainFileName);
 		}
-		if (newResult != FR_OK)
+		else
 		{
-			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", newFileName);
+			FRESULT newResult = f_open (&_NewFIle, newFileName, FA_WRITE | FA_CREATE_ALWAYS);
+		
+			if (newResult != FR_OK)
+			{
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", newFileName);
+			}
 		}
-		while(f_gets(buffer,100,&_ReadFile)!=nullptr)
+		
+		while (f_gets(buffer,100,&_ReadFile) != nullptr)
 		{
 			//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
-			check=f_puts(buffer,&_NewFIle);
+			check = f_puts(buffer, &_NewFIle);
 		}
 		if (f_close (&_NewFIle) != FR_OK)
 		{
@@ -460,13 +471,14 @@ void PShell::CommandMatch(const char *commandName)
     {
         pKernel->SystemOff();
     }
-  // Display Tasks/Scheduler Demo
-	else if(strcmp("displaytasks", commandName) == 0)
-  {
+  	// Display Tasks/Scheduler Demo
+	else if (strcmp("displaytasks", commandName) == 0)
+  	{
 		CScheduler::Get ()->CScheduler::turnPrintOn();
 	}
-	else if(strcmp("s", commandName) == 0)
-  {
+	// Stop printing Scheduler Demo
+	else if (strcmp("s", commandName) == 0)
+  	{
 		CScheduler::Get ()->CScheduler::turnPrintOff();
 	}
 	// Tail
@@ -548,7 +560,14 @@ void PShell::CommandMatch(const char *commandName)
 		}
 		SetColor(userRed,userGreen,userBlue);
 	}
-	strcpy(_mainCommandName, "");
+
+	// strcpy(_mainCommandName, "");
+	// strcpy(_commandParameterOne, "");
+	// strcpy(_commandParameterTwo, "");
+
+	memset(_mainCommandName, 0, sizeof(_mainCommandName));
+	memset(_commandParameterOne, 0, sizeof(_commandParameterOne));
+	memset(_commandParameterTwo, 0, sizeof(_commandParameterTwo));
 }
 
 void PShell::DisplayUserWithDirectory()
