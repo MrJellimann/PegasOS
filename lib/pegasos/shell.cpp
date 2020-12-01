@@ -6,7 +6,7 @@
 #include <pegasos/shell.h>
 
 #define SHELLDRIVE		"SD:/"
-#define MAX_USER_INPUT	200
+#define MAX_USER_INPUT	256
 
 CKernel *pKernel = 0;
 PShell *PShell::s_pThis = 0;
@@ -23,7 +23,7 @@ char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
 char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
-char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\tfind\n\thead\n\thello\n\thelp\n\tlistdir\n\tlogin\n\tmount\n\tmove";
+char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp\n\tlistdir\n\tmove";
 char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\tterminatetask\n\tusertext\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
@@ -595,6 +595,7 @@ void PShell::CommandMatch(const char *commandName)
 		}
 		SetColor(userRed,userGreen,userBlue);
 	}
+	// System Info
 	else if (strcmp("systeminfo", commandName) == 0)
 	{
 		CMachineInfo* _info = pKernel->GetKernelInfo();
@@ -603,7 +604,30 @@ void PShell::CommandMatch(const char *commandName)
 		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "SoC: %s", _info->GetSoCName());
 		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Model #: %i", _info->GetModelMajor());
 		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "RAM: %iGB", _info->GetRAMSize());
-		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i", _info->GetClockRate(CLOCK_ID_ARM));
+
+		unsigned int Hz = _info->GetClockRate(CLOCK_ID_ARM);
+		unsigned int kHz = Hz / 1000;
+		unsigned int mHz = kHz / 1000;
+		unsigned int gHz = mHz / 1000;
+
+		if (gHz >= 1)
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i GHz", gHz);
+		}
+		else if (mHz >= 1)
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i MHz", mHz);
+		}
+		else if (kHz >= 1)
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i KHz", kHz);
+		}
+		else
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i Hz", Hz);
+		}
+		
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i", _info->GetClockRate(CLOCK_ID_ARM));
 	}
 
 	// strcpy(_mainCommandName, "");
