@@ -294,7 +294,7 @@ void PShell::CommandMatch(const char *commandName)
 		while(f_gets(buffer,100,&_ReadFile)!=nullptr)
 		{
 			//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
-			check=f_puts(buffer,&_NewFIle);
+			check=f_puts(buffer,&_NewFIle); // ?????
 		}
 		if (f_close (&_NewFIle) != FR_OK)
 		{
@@ -307,7 +307,7 @@ void PShell::CommandMatch(const char *commandName)
 		pKernel->GetKernelScreenDevice()->Write("Current Working Directory is: ",31);
 		pKernel->GetKernelScreenDevice()->Write(_directory,strlen(_directory));
 		pKernel->GetKernelScreenDevice()->Write("\n",1);
-		char buffer[MAX_INPUT_LENGTH]="";
+		// char buffer[MAX_INPUT_LENGTH] = "";
 		DIR Directory;
 		FILINFO FileInfo;
 		FRESULT Result = f_findfirst (&Directory, &FileInfo, _directory, "*");
@@ -329,6 +329,9 @@ void PShell::CommandMatch(const char *commandName)
 
 			Result = f_findnext (&Directory, &FileInfo);
 		}
+
+		// Newline at the end of 'listdir' printouts
+		pKernel->GetKernelScreenDevice()->Write ("\n", 1);
 	}
     // Delete
 	else if ((strcmp("delete", commandName) == 0) || (strcmp("deletedir", commandName) == 0))
@@ -359,14 +362,16 @@ void PShell::CommandMatch(const char *commandName)
 		for(int x=0;x<3;x++)
 		{
 			//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Entered the for loop with %d",x);
-			while(index<strlen(temp))
+			while (index < (int)strlen(temp))
 			{
-				if(temp[index]==',')
+				if (temp[index] == ',')
 					break;
+				
 				//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Entered the while loop with temp[%d]=%c",index,temp[index]);
 				digits[sub]=temp[index];
 				sub++,index++;
 			}
+
 			digits[sub]='\0';
 			if(x==0)
 				dirRed=atoi(digits);
@@ -424,6 +429,9 @@ void PShell::CommandMatch(const char *commandName)
 		{
 			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
 		}
+
+		// Newline at end of 'head' printouts
+		pKernel->GetKernelScreenDevice()->Write ("\n", 1);
 	}
     // Hello
 	else if (strcmp("hello", commandName) == 0)
@@ -484,7 +492,7 @@ void PShell::CommandMatch(const char *commandName)
 		while (f_gets(buffer,100,&_ReadFile) != nullptr)
 		{
 			//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
-			check = f_puts(buffer, &_NewFIle);
+			check = f_puts(buffer, &_NewFIle); // ???
 		}
 		if (f_close (&_NewFIle) != FR_OK)
 		{
@@ -564,9 +572,12 @@ void PShell::CommandMatch(const char *commandName)
 		{
 			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
 		}
+
+		// Newline at end of 'tail' printouts
+		pKernel->GetKernelScreenDevice()->Write ("\n", 1);
 	}
 	// Change the Username color
-	else if(strcmp("usertext",commandName)==0)
+	else if (strcmp("usertext",commandName)==0)
 	{
 		assert(pKernel != 0);
 		char temp[PMAX_INPUT_LENGTH]="", digits[PMAX_INPUT_LENGTH]="";
@@ -575,15 +586,16 @@ void PShell::CommandMatch(const char *commandName)
 		for(int x=0;x<3;x++)
 		{
 			//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Entered the for loop with %d",x);
-			while(index<strlen(temp))
+			while (index < (int)strlen(temp))
 			{
-				if(temp[index]==',')
+				if (temp[index] == ',')
 					break;
 				//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Entered the while loop with temp[%d]=%c",index,temp[index]);
-				digits[sub]=temp[index];
-				sub++,index++;
+				digits[sub] = temp[index];
+				sub++, index++;
 			}
-			digits[sub]='\0';
+
+			digits[sub] = '\0';
 			if(x==0)
 				userRed=atoi(digits);
 			if(x==1)
@@ -656,8 +668,9 @@ void PShell::DisplayUserWithDirectory()
 
 void PShell::EditUserName(const char *loginName)
 {
-	strcpy(_directory,"SD:/users/");
-	strcat(_directory,loginName);
+	strcpy(_directory, "SD:/users/");
+	strcat(_directory, loginName);
+	strcat(_directory, "/desktop"); // Start in user's desktop
 	strcpy(_userName,loginName);
 }
 

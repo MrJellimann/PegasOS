@@ -222,9 +222,21 @@ void CKernel::TimerHandler (TKernelTimerHandle hTimer, void *pParam, void *pCont
 
 void CKernel::commenceLogin()
 {
-	char userDirectory[]="SD:/users", _tempFileName[]="";
+	char userDirectory[] = "SD:/users", _tempFileName[] = "";
 	char Buffer[100];
-	if(_OffBoot == 0)
+
+	// First, check for the 'users' directory
+	FRESULT _userDir = f_mkdir(userDirectory);
+
+	if (_userDir != FR_EXIST)
+	{
+		if (_userDir != FR_OK)
+		{
+			s_pThis->m_Logger.Write (FromKernel, LogPanic, "Cannot create 'users' directory. Please restart the system.");
+		}
+	}
+
+	if (_OffBoot == 0)
 	{
 		DIR Directory;
 		FILINFO FileInfo;
@@ -253,34 +265,36 @@ void CKernel::commenceLogin()
 		}
 		else if(_UserNameMatch==0)
 		{
-			s_pThis->m_Screen.Write ("User does not exist. Would you like to create one?  ",53);
-			strcpy(_inputUsername,"");
-			_OffBoot=1;
+			s_pThis->m_Screen.Write ("User does not exist. Would you like to create one?  [Y]es/[N]o   ", 66);
+			strcpy(_inputUsername, "");
+			_OffBoot = 1;
 		}
 	}
-	else if( _OffBoot ==1)
+	else if( _OffBoot == 1)
 	{
-		if((strcmp(_userResponse,"no")==0) || (strcmp(_userResponse,"n")==0))
+		if ((strcmp(_userResponse, "no") == 0) || (strcmp(_userResponse, "n") == 0))
 		{
 			s_pThis->m_Screen.Write("Re-enter Username:  ",21);
-			_OffBoot=0;
+			_OffBoot = 0;
 		}
-		else if((strcmp(_userResponse,"yes")==0) || (strcmp(_userResponse,"y")==0))
+		else if ((strcmp(_userResponse,"yes") == 0) || (strcmp(_userResponse,"y") == 0))
 		{
 			s_pThis->m_Screen.Write("Enter desired Username:  ",26);
-			_OffBoot=3;
+			_OffBoot = 3;
 		}
 		strcpy(_userResponse,"");
 	}
-	else if(_OffBoot == 2)
+	else if (_OffBoot == 2)
 	{
-		strcat(userDirectory,"/");
-		strcat(userDirectory,_inputUsername);
-		strcat(userDirectory,"/");
-		strcat(userDirectory,_inputUsername);
-		strcat(userDirectory,".txt");
+		strcat(userDirectory, "/");
+		strcat(userDirectory, _inputUsername);
+		strcat(userDirectory, "/");
+		strcat(userDirectory, _inputUsername);
+		strcat(userDirectory, ".txt");
+
 		FIL passwordFILE;
 		FRESULT Result = f_open (&passwordFILE, userDirectory, FA_READ | FA_OPEN_EXISTING);
+		
 		if (Result != FR_OK)
 		{
 			s_pThis->m_Screen.Write("Cannot open the file!\n",22);
@@ -294,21 +308,37 @@ void CKernel::commenceLogin()
 				break;
 			}
 		}
-		if(strcmp(Buffer,_inputPassword)==0)
+
+		if (strcmp(Buffer, _inputPassword) == 0)
 		{
 			s_pThis->m_Screen.Write("Successfully logged in!\n",24);
-			strcpy(userDirectory,"SD:/users/");
-			strcat(userDirectory,_inputUsername);
-			FRESULT _Result=f_chdir(userDirectory);
+
+			// First, try to move into the user's 'desktop'
+			strcpy(userDirectory, "SD:/users/");
+			strcat(userDirectory, _inputUsername);
+			strcat(userDirectory, "/desktop");
+
+			FRESULT _Result = f_chdir(userDirectory);
 			if (_Result != FR_OK)
 			{
 				s_pThis->m_Screen.Write("The file path was incorrect\n", 28);
+
+				// If that fails, move into the user's root directory
+				strcpy(userDirectory, "SD:/users/");
+				strcat(userDirectory, _inputUsername);
+
+				FRESULT _Result2 = f_chdir(userDirectory);
+				if (_Result2 != FR_OK)
+				{
+					s_pThis->m_Screen.Write("The file path was incorrect\n", 28);
+				}
 			}
+
 			PegasosShell->EditUserName(_inputUsername);
 			PegasosShell->DisplayUserWithDirectory();
-			_OffBoot=5;
+			_OffBoot = 5;
 		}
-		else if(strcmp(Buffer,_inputPassword)!=0)
+		else if (strcmp(Buffer, _inputPassword) != 0)
 		{
 			s_pThis->m_Screen.Write("Password mismatch.\n",21);
 			s_pThis->m_Screen.Write("Re-enter password:  ",21);
@@ -320,20 +350,41 @@ void CKernel::commenceLogin()
 			s_pThis->m_Screen.Write("Cannot close the file!\n",22);
 		}
 	}
-	else if(_OffBoot==3)
+	else if (_OffBoot == 3)
 	{
 		// This will create the directory and user file.
-		strcpy(userDirectory,"SD:/users/");
-		strcat(userDirectory,_inputUsername);
-		FRESULT _Result=f_mkdir(userDirectory);
+		// Create /users/<user>
+		strcpy(userDirectory, "SD:/users/");
+		strcat(userDirectory, _inputUsername);
+		FRESULT _Result = f_mkdir(userDirectory);
+		// Create /users/<user>/documents
+		strcat(userDirectory, "/documents");
+		FRESULT _Result2 = f_mkdir(userDirectory);
+		// Create /users/<user>/desktop
+		strcpy(userDirectory, "SD:/users/");
+		strcat(userDirectory, _inputUsername);
+		strcat(userDirectory, "/desktop");
+		FRESULT _Result3 = f_mkdir(userDirectory);
+
 		if (_Result != FR_OK)
 		{
 			s_pThis->m_Screen.Write("The sub-directory wasn't able to be made.\n", 42);
 		}
+		
+		if (_Result2 != FR_OK)
+		{
+			s_pThis->m_Screen.Write("The user's 'documents' directory wasn't able to be made.\n", 57);
+		}
+
+		if (_Result3 != FR_OK)
+		{
+			s_pThis->m_Screen.Write("The user's 'desktop' directory wasn't able to be made.\n", 57);
+		}
+
 		s_pThis->m_Screen.Write("Username was created. Now please enter a password: ",52);
-		_OffBoot=4;
+		_OffBoot = 4;
 	}
-	else if(_OffBoot==4)	//This will take the password given and then write it to their file and then log them in
+	else if (_OffBoot == 4)	//This will take the password given and then write it to their file and then log them in
 	{
 		strcat(userDirectory,"/");
 		strcat(userDirectory,_inputUsername);
@@ -341,33 +392,58 @@ void CKernel::commenceLogin()
 		strcat(userDirectory,_inputUsername);
 		strcat(userDirectory,".txt");
 		FIL _NewFIle;
-		int Pass=1;
+		int Pass = 1;
+
 		FRESULT Result = f_open (&_NewFIle, userDirectory, FA_WRITE | FA_CREATE_ALWAYS);
 		if (Result != FR_OK)
 		{
 			s_pThis->m_Screen.Write("Cannot create user file.\n",25);
-			Pass=0;
+			Pass = 0;
 		}
+
 		CString Msg;
 		Msg.Format ("%s", _inputPassword);
 		unsigned nBytesWritten;
 		if (f_write(&_NewFIle, (const char *) Msg, Msg.GetLength (), &nBytesWritten) != FR_OK|| nBytesWritten != Msg.GetLength ())
 		{
 			s_pThis->m_Screen.Write("Cannot write to user file.\n",25);
-			Pass=0;
+			Pass = 0;
 		}
 		
 		if (f_close (&_NewFIle) != FR_OK)
 		{
 			s_pThis->m_Screen.Write("Cannot close user file.\n",24);
-			Pass=0;
+			Pass = 0;
 		}
-		if(Pass==1)
+
+		if (Pass == 1)
 		{
-			s_pThis->m_Screen.Write("Successfully logged in!\n",24);
+			s_pThis->m_Screen.Write("Successfully logged in!\n", 24);
+
+			// First, try to move into the user's 'desktop'
+			strcpy(userDirectory, "SD:/users/");
+			strcat(userDirectory, _inputUsername);
+			strcat(userDirectory, "/desktop");
+
+			FRESULT _Result = f_chdir(userDirectory);
+			if (_Result != FR_OK)
+			{
+				s_pThis->m_Screen.Write("The file path was incorrect\n", 28);
+
+				// If that fails, move into the user's root directory
+				strcpy(userDirectory, "SD:/users/");
+				strcat(userDirectory, _inputUsername);
+
+				FRESULT _Result2 = f_chdir(userDirectory);
+				if (_Result2 != FR_OK)
+				{
+					s_pThis->m_Screen.Write("The file path was incorrect\n", 28);
+				}
+			}
+
 			PegasosShell->EditUserName(_inputUsername);
 			PegasosShell->DisplayUserWithDirectory();
-			_OffBoot=5;
+			_OffBoot = 5;
 		}
 	}
 
@@ -390,23 +466,14 @@ void CKernel::EditFileName(char* tempFileName)
 void CKernel::KeyPressedHandler (const char *pString)
 {
 	assert (s_pThis != 0);
-
-	if (strcmp(pString, "\b") == 0)
-	{
-		s_pThis->m_Screen.Write ("boi", 3);
-	}
-	// if (strcmp(pString, "\d") == 0)
-	// {
-	// 	s_pThis->m_Screen.Write ("doi", 3);
-	// }
   
-	if(_OffBoot!=2 && _OffBoot!=4)
+	if (_OffBoot != 2 && _OffBoot != 4)
 		s_pThis->m_Screen.Write (pString, strlen (pString));
-	if(_OffBoot != 5)
+	if (_OffBoot != 5)
 	{
 		LoginInput(pString);
 	}
-	else if(_OffBoot == 5)
+	else if (_OffBoot == 5)
 	{
 		PegasosShell->CommandLineIn(pString);
 	}
