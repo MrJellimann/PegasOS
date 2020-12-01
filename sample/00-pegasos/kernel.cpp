@@ -318,6 +318,7 @@ void CKernel::commenceLogin()
 			strcat(userDirectory, _inputUsername);
 			strcat(userDirectory, "/desktop");
 
+			FRESULT _desktop = f_mkdir(userDirectory);
 			FRESULT _Result = f_chdir(userDirectory);
 			if (_Result != FR_OK)
 			{
