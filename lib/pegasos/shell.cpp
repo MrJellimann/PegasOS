@@ -6,6 +6,7 @@
 #include <pegasos/shell.h>
 
 #define SHELLDRIVE		"SD:/"
+#define MAX_USER_INPUT	200
 
 CKernel *pKernel = 0;
 PShell *PShell::s_pThis = 0;
@@ -13,7 +14,7 @@ PShell *PShell::s_pThis = 0;
 static const char _FromKernel[] = "kernel";
 
 int _stringLen, _globalIndex=0, dirRed=31, dirGreen=31, dirBlue=31, userRed=31, userGreen=31, userBlue=31;//, _OffBoot=0;
-char _inputByUser[200], _message[PMAX_INPUT_LENGTH]="Command was found!"; /////////
+char _inputByUser[MAX_USER_INPUT], _message[PMAX_INPUT_LENGTH]="Command was found!"; /////////
 char _directory[PMAX_DIRECTORY_LENGTH]="SD:";
 char _mainCommandName[PMAX_DIRECTORY_LENGTH];
 char _commandParameterOne[PMAX_INPUT_LENGTH];
@@ -46,22 +47,49 @@ void PShell::AssignKernel(CKernel* _kernel)
 }
 
 void PShell::CommandLineIn(const char* keyInput)
-{
-    // pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "\nAttempting to read char into PSHELL...\n");
-	// assert (pKernel != 0);
-    // pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Successfully asserted kernel exists.\n");
+{	
+	int _len = strlen(keyInput);
+	int _len2;
 
-	if (strcmp(keyInput, "\n") == 0)
+	for (int i = 0; i < _len; i++)
 	{
-		_stringLen = strlen(_inputByUser);
-		_inputByUser[_stringLen] = '\0';
-		SplitCommandLine(_inputByUser);
-		CommandMatch(_mainCommandName);
-		DisplayUserWithDirectory();
-		strcpy(_inputByUser, "");
+		// Debug
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "[%c, %c], [%s]", keyInput[i], (char)keyInput[i], &keyInput[i]);
+		switch ((char)keyInput[i])
+		{
+			case '\b':
+			case 127:
+				_len2 = strlen(_inputByUser);
+				_inputByUser[_len2-1] = '\0';
+				break;
+			
+			case '\n':
+				_stringLen = strlen(_inputByUser);
+				_inputByUser[_stringLen] = '\0';
+				SplitCommandLine(_inputByUser);
+				CommandMatch(_mainCommandName);
+				DisplayUserWithDirectory();
+				strcpy(_inputByUser, "");
+				break;
+			
+			case '\x1b': // Ignore all escapes for now
+				// [A - Up
+				// [B - Down
+				// [C - Right
+				// [D - Left
+
+				// Skip the rest of the string
+				i = _len;
+				break;
+			
+			default:
+				strcat(_inputByUser, &keyInput[i]);
+				break;
+		}
 	}
-	if (strcmp(keyInput,"\n") != 0)
-		strcat(_inputByUser, keyInput);
+	
+	// Debug
+	// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "[%s] [len:%i]", _inputByUser, strlen(_inputByUser));
 }
 
 void PShell::SplitCommandLine(const char* input)
@@ -70,6 +98,10 @@ void PShell::SplitCommandLine(const char* input)
 	strcpy(_commandParameterOne, "");
 	strcpy(_commandParameterTwo, "");
 	int  mainIndex = 0, subIndex = 0, spacebar = 0, stringLength=strlen(input);
+
+	// Debug
+	// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "inputLength[%i]", stringLength);
+
 	for (int x = 0; x < stringLength; x++)
 	{
 		if (input[x] == 32)
@@ -138,6 +170,9 @@ void PShell::SplitCommandLine(const char* input)
 		}
 		_commandParameterTwo[subIndex] = '\0';
 	}
+
+	// Debug
+	// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "_mCN[%s]", _mainCommandName);
 }
 
 void PShell::CommandMatch(const char *commandName)

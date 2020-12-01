@@ -176,7 +176,7 @@ TShutdownMode CKernel::Run (void)
 	new CLEDTask (&m_ActLED);
   
   	// Start login
-	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername:  ", 67);
+	s_pThis->m_Screen.Write("Hello, Welcome to PegasOS!\nPlease login in to continue...\nUsername:  ", 69);
 	
 	// this is the main loop for the OS
 	for (unsigned nCount = 0; m_ShutdownMode == ShutdownNone; nCount++)
@@ -390,6 +390,15 @@ void CKernel::EditFileName(char* tempFileName)
 void CKernel::KeyPressedHandler (const char *pString)
 {
 	assert (s_pThis != 0);
+
+	if (strcmp(pString, "\b") == 0)
+	{
+		s_pThis->m_Screen.Write ("boi", 3);
+	}
+	// if (strcmp(pString, "\d") == 0)
+	// {
+	// 	s_pThis->m_Screen.Write ("doi", 3);
+	// }
   
 	if(_OffBoot!=2 && _OffBoot!=4)
 		s_pThis->m_Screen.Write (pString, strlen (pString));
@@ -401,6 +410,8 @@ void CKernel::KeyPressedHandler (const char *pString)
 	{
 		PegasosShell->CommandLineIn(pString);
 	}
+
+	// s_pThis->m_Logger.Write (FromKernel, LogNotice, "%i, %c", pString[0], pString[0]);
 }
 
 void CKernel::LoginInput(const char* keyInput)

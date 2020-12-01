@@ -248,7 +248,9 @@ void CScreenDevice::Write (char chChar)
 	case ScreenStateStart:
 		switch (chChar)
 		{
-		case '\b':
+		case '\b': // Backspace
+		case 127: // Delete
+			EraseChar (m_nCursorX - m_CharGen.GetCharWidth (), m_nCursorY);
 			CursorLeft ();
 			break;
 
@@ -562,6 +564,7 @@ void CScreenDevice::CursorHome (void)
 	m_nCursorY = m_nScrollStart;
 }
 
+/////////////////////////////////////
 void CScreenDevice::CursorLeft (void)
 {
 	if (m_nCursorX > 0)
@@ -626,6 +629,13 @@ void CScreenDevice::DisplayChar (char chChar)
 		DisplayChar (chChar, m_nCursorX, m_nCursorY, m_Color);
 
 		CursorRight ();
+	}
+	// Catchall
+	else if ((unsigned char) chChar == '\b' || (unsigned char) chChar == 127)
+	{
+		EraseChar(m_nCursorX, m_nCursorY);
+
+		CursorLeft ();
 	}
 }
 
