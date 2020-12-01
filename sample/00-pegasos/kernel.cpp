@@ -416,61 +416,99 @@ void CKernel::KeyPressedHandler (const char *pString)
 
 void CKernel::LoginInput(const char* keyInput)
 {
-	int stringLength=0;
-	if(_OffBoot == 0)
+	int stringLength = 0;
+
+	int _inputLen = strlen(keyInput);
+	int _len2;
+
+	for (int i = 0; i < _inputLen; i++)
 	{
-		if (strcmp(keyInput, "\n") == 0)
+		switch ((char)keyInput[i])
 		{
-			stringLength = strlen(_inputUsername);
-			_inputUsername[stringLength] = '\0';
-			commenceLogin();
+			case '\n': // Carriage Return
+				switch (_OffBoot)
+				{
+					case 0: // Input Username
+					case 3:
+						stringLength = strlen(_inputUsername);
+						_inputUsername[stringLength] = '\0';
+						commenceLogin();
+						break;
+					
+					case 1: // User Response
+						stringLength = strlen(_userResponse);
+						_userResponse[stringLength] = '\0';
+						commenceLogin();
+						break;
+					
+					case 2: // Input Password
+					case 4:
+						stringLength = strlen(_inputPassword);
+						_inputPassword[stringLength] = '\0';
+						commenceLogin();
+						break;
+
+					default:
+						// Do nothing
+						break;
+				}
+				break;
+			
+			case '\b': // Backspace
+			case 127: // Delete
+				switch (_OffBoot)
+				{
+					case 0: // Input Username
+					case 3:
+						_len2 = strlen(_inputUsername);
+						_inputUsername[_len2-1] = '\0';
+						break;
+					
+					case 1: // User Response
+						_len2 = strlen(_userResponse);
+						_userResponse[_len2-1] = '\0';
+						break;
+					
+					case 2: // Input Password
+					case 4:
+						_len2 = strlen(_inputPassword);
+						_inputPassword[_len2-1] = '\0';
+						break;
+					
+					default:
+						// Do nothing
+						break;
+				}
+				break;
+			
+			case '\x1b': // Escape Character
+				// Skip the rest of the escape string
+				i = _inputLen;
+				break;
+			
+			default: // Other Characters
+				switch (_OffBoot)
+				{
+					case 0: // Input Username
+					case 3:
+						strcat(_inputUsername, &keyInput[i]);
+						break;
+
+					case 1: // User Response
+						strcat(_userResponse, &keyInput[i]);
+						break;
+
+					case 2: // Input Password
+					case 4:
+						strcat(_inputPassword, &keyInput[i]);
+						break;
+					
+					default:
+						// Do nothing
+						break;
+				}
+				break;
 		}
-		if (strcmp(keyInput,"\n") != 0)
-			strcat(_inputUsername, keyInput);
-	}
-	else if(_OffBoot == 1)
-	{
-		if (strcmp(keyInput, "\n") == 0)
-		{
-			stringLength = strlen(_userResponse);
-			_userResponse[stringLength] = '\0';
-			commenceLogin();
-		}
-		if (strcmp(keyInput,"\n") != 0)
-			strcat(_userResponse, keyInput);
-	}
-	else if(_OffBoot == 2)
-	{
-		if (strcmp(keyInput, "\n") == 0)
-		{
-			stringLength = strlen(_inputPassword);
-			_inputPassword[stringLength] = '\0';
-			commenceLogin();
-		}
-		if (strcmp(keyInput,"\n") != 0)
-			strcat(_inputPassword, keyInput);
-	}
-	else if(_OffBoot==3)
-	{
-		if (strcmp(keyInput, "\n") == 0)
-		{
-			stringLength = strlen(_inputUsername);
-			_inputUsername[stringLength] = '\0';
-			commenceLogin();
-		}
-		if (strcmp(keyInput,"\n") != 0)
-			strcat(_inputUsername, keyInput);
-	}
-	else if(_OffBoot==4)
-	{
-		if (strcmp(keyInput, "\n") == 0)
-		{
-			stringLength = strlen(_inputPassword);
-			_inputPassword[stringLength] = '\0';
-			commenceLogin();
-		}
-		if (strcmp(keyInput,"\n") != 0)
-			strcat(_inputPassword, keyInput);
 	}
 }
 
