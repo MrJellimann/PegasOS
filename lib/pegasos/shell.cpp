@@ -22,9 +22,9 @@ char _commandParameterTwo[PMAX_INPUT_LENGTH];
 char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
-char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tcopy\n\tcreatedir";
-char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tcurrenttasks\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp";
-char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tlistdir\n\tmemorystats\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\tusertext\n\twriteto\n";
+char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tcreatefile\n\tcreatedir\n\tcopy\n\tcurrenttasks";
+char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp\n\tlistdir\n\tmemorystats";
+char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tmove\n\tpower\n\treboot\n\tsysteminfo\n\ttail\n\tterminatetask\n\tusertext\n\twriteto\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
 TScreenStatus stat;
@@ -412,8 +412,36 @@ void PShell::CommandMatch(const char *commandName)
 	else if (strcmp("echo", commandName) == 0)
 	{
 		strcpy(_message, "Echo ");
+
+		if (strlen(_commandParameterOne) >= PMAX_INPUT_LENGTH - strlen(_message))
+		{
+			strncpy(_message, _commandParameterOne, PMAX_INPUT_LENGTH - strlen(_message));
+
+			pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
+			pKernel->GetKernelScreenDevice()->Write("\n", 1);
+
+			return;
+		}
+
 		strcat(_message, _commandParameterOne);
-		strcat(_message, " Echo!");
+
+		if (strlen(_commandParameterTwo) > 0)
+			strcat(_message, " ");
+
+		if (strlen(_commandParameterTwo) >= PMAX_INPUT_LENGTH - strlen(_message))
+		{
+			strncpy(_message, _commandParameterTwo, PMAX_INPUT_LENGTH - strlen(_message));
+
+			pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
+			pKernel->GetKernelScreenDevice()->Write("\n", 1);
+
+			return;
+		}
+
+		strcat(_message, _commandParameterTwo);
+
+		if (strlen(_message) <= PMAX_INPUT_LENGTH - 7)
+			strcat(_message, " Echo!");
 		
 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
@@ -933,6 +961,7 @@ void PShell::CommandMatch(const char *commandName)
 	memset(_mainCommandName, 0, sizeof(_mainCommandName));
 	memset(_commandParameterOne, 0, sizeof(_commandParameterOne));
 	memset(_commandParameterTwo, 0, sizeof(_commandParameterTwo));
+	memset(_message, 0, sizeof(_message));
 }
 
 void PShell::DisplayUserWithDirectory()
