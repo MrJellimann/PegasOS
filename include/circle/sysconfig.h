@@ -207,8 +207,9 @@
 
 // MAX_TASKS is the maximum number of tasks in the system.
 // it was 20 but moved to 10 for 2 queues
+// moved back to 20 because one queue
 #ifndef MAX_TASKS
-#define MAX_TASKS		10
+#define MAX_TASKS		20
 #endif
 
 // TASK_STACK_SIZE is the stack size for each task.
