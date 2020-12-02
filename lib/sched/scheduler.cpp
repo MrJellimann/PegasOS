@@ -201,7 +201,7 @@ void CScheduler::PopTask()
 {
 	// DO NOT UNCOMMENT THIS UNLESS YOU KNOW WHAT YOU'RE DOING
 	// POPPING THE TASK AT [0] KILLS THE SYSTEM, FORCING MANUAL RESTART
-	
+
 	// m_pTask[0] = 0;
 	
 	// if (m_nTasks > 0)
@@ -335,7 +335,8 @@ CString CScheduler::listTasks()
 	_temp.Format("Current Task Index: %i || Task Count: %i || Total Possible Tasks: %i\n\n", m_nCurrent, m_nTasks, MAX_TASKS);
 	Message.Append((const char*) _temp);
 
-	int i, tempWeight;
+	unsigned int i;
+	int tempWeight;
 	// Using m_nTasks here prevents a stack overflow and kernel panic so be nice!
 	for (i = 0; i < m_nTasks; i++)
 	{
@@ -359,7 +360,8 @@ CString CScheduler::listTasks()
 // This one uses the logger to get it done
 void CScheduler::ListTasks()
 {
-	int i, tempWeight;
+	unsigned int i;
+	int tempWeight;
 
 	CLogger::Get()->Write(FromScheduler, LogNotice, "Current Task Index: %i || Task Count: %i || Total Possible Tasks: %i\n", m_nCurrent, m_nTasks, MAX_TASKS);
 

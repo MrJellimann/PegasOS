@@ -24,7 +24,7 @@ char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
 char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tcopy\n\tcreatedir";
 char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tcurrenttasks\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp";
-char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tlistdir\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\tusertext\n\twriteto\n";
+char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tlistdir\n\tmemorystats\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\tusertext\n\twriteto\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
 TScreenStatus stat;
@@ -277,6 +277,7 @@ void PShell::CommandMatch(const char *commandName)
 		strcat(newFileName,"/");
 		strcat(newFileName,_commandParameterOne);
 		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The mainFileName is: |%s| The newFileName is: |%s|\n",mainFileName,newFileName);
+		
 		FRESULT mainResult = f_open (&_ReadFile, mainFileName, FA_READ | FA_OPEN_EXISTING);
 		FRESULT newResult = f_open (&_NewFIle, newFileName, FA_WRITE | FA_CREATE_ALWAYS);
 		if (mainResult != FR_OK)
@@ -287,10 +288,16 @@ void PShell::CommandMatch(const char *commandName)
 		{
 			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", newFileName);
 		}
-		while(f_gets(buffer,100,&_ReadFile)!=nullptr)
+
+		while (f_gets(buffer, MAX_INPUT_LENGTH, &_ReadFile) != nullptr)
 		{
 			//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
-			check=f_puts(buffer,&_NewFIle); // ?????
+			check = f_puts(buffer,&_NewFIle);
+
+			if (!check)
+			{
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Failed to write line to file '%s'", newFileName);
+			}
 		}
 		if (f_close (&_NewFIle) != FR_OK)
 		{
@@ -449,7 +456,7 @@ void PShell::CommandMatch(const char *commandName)
     // Login
 	else if (strcmp("login", commandName) == 0)
 	{
-		pKernel->GetKernelScreenDevice()->Write("We found login!\n", 16);
+		// pKernel->GetKernelScreenDevice()->Write("We found login!\n", 16);
 	}
 	// Move
 	else if (strcmp("move", commandName) == 0)
@@ -483,14 +490,26 @@ void PShell::CommandMatch(const char *commandName)
 			{
 				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", newFileName);
 			}
+			else
+			{
+				while (f_gets(buffer, MAX_INPUT_LENGTH, &_ReadFile) != nullptr)
+				{
+					//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
+					check = f_puts(buffer,&_NewFIle);
+
+					if (!check)
+					{
+						pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Failed to write line to file '%s'", newFileName);
+					}
+				}
+			}
 		}
-		
 		
 		if (f_close (&_NewFIle) != FR_OK)
 		{
 			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
 		}
-		FRESULT deleteResult=f_unlink(mainFileName);
+		FRESULT deleteResult = f_unlink(mainFileName);
 		if ((deleteResult != FR_OK) && (strcmp("delete", commandName) == 0))
 		{
 			pKernel->GetKernelScreenDevice()->Write("The file was not deleted.\n", 26);
@@ -696,6 +715,146 @@ void PShell::CommandMatch(const char *commandName)
 
 		// Newline after 'currenttasks' command
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
+	}
+	// Memory System Demo
+	else if (strcmp("memorystats", commandName) == 0)
+	{
+		size_t heapLow = pKernel->GetKernelMemory()->GetHeapFreeSpace(HEAP_LOW); // Bits or Bytes?
+		size_t heapHigh = pKernel->GetKernelMemory()->GetHeapFreeSpace(HEAP_HIGH); // Bits or Bytes?
+		size_t heapAny = pKernel->GetKernelMemory()->GetHeapFreeSpace(HEAP_ANY); // Bits or Bytes?
+		size_t memSize = pKernel->GetKernelMemory()->GetMemSize(); // Bits or Bytes?
+		size_t _KB, _MB, _GB;
+		int useLogger = 0;
+
+		CString statString, _tempS;
+
+		_KB = heapLow / 1000;
+		_MB = _KB / 1000;
+		_GB = _MB / 1000;
+		if (useLogger)
+		{
+			if (_GB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Low): %lu GB", _GB);
+			else if (_MB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Low): %lu MB", _MB);
+			else if (_KB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Low): %lu KB", _KB);
+			else
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Low): %lu B", heapLow);
+		}
+		else
+		{
+			statString.Format("Heap Free Space (Low): ");
+
+			if (_GB >= 1)
+				_tempS.Format("%lu GB\n", _GB);
+			else if (_MB >= 1)
+				_tempS.Format("%lu MB\n", _MB);
+			else if (_KB >= 1)
+				_tempS.Format("%lu KB\n", _KB);
+			else
+				_tempS.Format("%lu B\n", heapLow);
+			
+			statString.Append((const char*)_tempS);
+			pKernel->GetKernelScreenDevice()->Write((const char*)statString, statString.GetLength());
+		}
+		
+
+		_KB = heapHigh / 1000;
+		_MB = _KB / 1000;
+		_GB = _MB / 1000;
+		if (useLogger)
+		{
+			if (_GB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (High): %lu GB", _GB);
+			else if (_MB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (High): %lu MB", _MB);
+			else if (_KB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (High): %lu KB", _KB);
+			else
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (High): %lu B", heapHigh);
+		}
+		else
+		{
+			statString.Format("Heap Free Space (High): ");
+
+			if (_GB >= 1)
+				_tempS.Format("%lu GB\n", _GB);
+			else if (_MB >= 1)
+				_tempS.Format("%lu MB\n", _MB);
+			else if (_KB >= 1)
+				_tempS.Format("%lu KB\n", _KB);
+			else
+				_tempS.Format("%lu B\n", heapHigh);
+			
+			statString.Append((const char*)_tempS);
+			pKernel->GetKernelScreenDevice()->Write((const char*)statString, statString.GetLength());
+		}
+
+		_KB = heapAny / 1000;
+		_MB = _KB / 1000;
+		_GB = _MB / 1000;
+		if (useLogger)
+		{
+			if (_GB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Any): %lu GB", _GB);
+			else if (_MB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Any): %lu MB", _MB);
+			else if (_KB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Any): %lu KB", _KB);
+			else
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Any): %lu B", heapAny);
+		}
+		else
+		{
+			statString.Format("Heap Free Space (Any): ");
+
+			if (_GB >= 1)
+				_tempS.Format("%lu GB\n", _GB);
+			else if (_MB >= 1)
+				_tempS.Format("%lu MB\n", _MB);
+			else if (_KB >= 1)
+				_tempS.Format("%lu KB\n", _KB);
+			else
+				_tempS.Format("%lu B\n", heapAny);
+			
+			statString.Append((const char*)_tempS);
+			pKernel->GetKernelScreenDevice()->Write((const char*)statString, statString.GetLength());
+		}
+
+		_KB = memSize / 1000;
+		_MB = _KB / 1000;
+		_GB = _MB / 1000;
+		if (useLogger)
+		{
+			if (_GB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Memory Blocks: %lu GB", _GB);
+			else if (_MB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Memory Blocks: %lu MB", _MB);
+			else if (_KB >= 1)
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Memory Blocks: %lu KB", _KB);
+			else
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Memory Blocks: %lu B", memSize);
+		}
+		else
+		{
+			statString.Format("Memory Blocks: ");
+
+			if (_GB >= 1)
+				_tempS.Format("%lu GB\n", _GB);
+			else if (_MB >= 1)
+				_tempS.Format("%lu MB\n", _MB);
+			else if (_KB >= 1)
+				_tempS.Format("%lu KB\n", _KB);
+			else
+				_tempS.Format("%lu B\n", memSize);
+			
+			statString.Append((const char*)_tempS);
+			pKernel->GetKernelScreenDevice()->Write((const char*)statString, statString.GetLength());
+		}
+
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Low): %i", heapLow);
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Heap Free Space (Low): %i", heapLow);
 	}
 
 	// Secret Command shhhhh
