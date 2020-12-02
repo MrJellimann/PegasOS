@@ -412,8 +412,36 @@ void PShell::CommandMatch(const char *commandName)
 	else if (strcmp("echo", commandName) == 0)
 	{
 		strcpy(_message, "Echo ");
+
+		if (strlen(_commandParameterOne) >= PMAX_INPUT_LENGTH - strlen(_message))
+		{
+			strncpy(_message, _commandParameterOne, PMAX_INPUT_LENGTH - strlen(_message));
+
+			pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
+			pKernel->GetKernelScreenDevice()->Write("\n", 1);
+
+			return;
+		}
+
 		strcat(_message, _commandParameterOne);
-		strcat(_message, " Echo!");
+
+		if (strlen(_commandParameterTwo) > 0)
+			strcat(_message, " ");
+
+		if (strlen(_commandParameterTwo) >= PMAX_INPUT_LENGTH - strlen(_message))
+		{
+			strncpy(_message, _commandParameterTwo, PMAX_INPUT_LENGTH - strlen(_message));
+
+			pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
+			pKernel->GetKernelScreenDevice()->Write("\n", 1);
+
+			return;
+		}
+
+		strcat(_message, _commandParameterTwo);
+
+		if (strlen(_message) <= PMAX_INPUT_LENGTH - 7)
+			strcat(_message, " Echo!");
 		
 		pKernel->GetKernelScreenDevice()->Write(_message, strlen(_message));
 		pKernel->GetKernelScreenDevice()->Write("\n", 1);
@@ -933,6 +961,7 @@ void PShell::CommandMatch(const char *commandName)
 	memset(_mainCommandName, 0, sizeof(_mainCommandName));
 	memset(_commandParameterOne, 0, sizeof(_commandParameterOne));
 	memset(_commandParameterTwo, 0, sizeof(_commandParameterTwo));
+	memset(_message, 0, sizeof(_message));
 }
 
 void PShell::DisplayUserWithDirectory()
