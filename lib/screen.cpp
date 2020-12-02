@@ -302,22 +302,26 @@ void CScreenDevice::Write (char chChar)
 			break;
 
 		case 'A':
-			CursorUp ();
+			// Disable Up Arrow Key
+			// CursorUp ();
 			m_nState = ScreenStateStart;
 			break;
 
 		case 'B':
-			CursorDown ();
+			// Disable Down Arrow Key
+			// CursorDown ();
 			m_nState = ScreenStateStart;
 			break;
 
 		case 'C':
-			CursorRight ();
+			// Disable Right Arrow Key
+			// CursorRight ();
 			m_nState = ScreenStateStart;
 			break;
 
 		case 'D':
-			CursorLeft ();
+			// Disable Left Arrow Key
+			// CursorLeft ();
 			m_nState = ScreenStateStart;
 			break;
 
