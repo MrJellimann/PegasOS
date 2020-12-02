@@ -22,9 +22,9 @@ char _commandParameterTwo[PMAX_INPUT_LENGTH];
 char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
-char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tconcat\n\tcopy\n\tcreatedir";
+char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tcopy\n\tcreatedir";
 char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp\n\tlistdir\n\tmove";
-char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\tterminatetask\n\tusertext\n";
+char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\tterminatetask\n\tusertext\n\twriteto\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
 TScreenStatus stat;
@@ -568,8 +568,8 @@ void PShell::CommandMatch(const char *commandName)
 		// Newline at end of 'tail' printouts
 		pKernel->GetKernelScreenDevice()->Write ("\n", 1);
 	}
-	// Touch
-	else if (strcmp("touch", commandName) == 0)
+	// Write to (file)
+	else if (strcmp("writeto", commandName) == 0)
 	{
 		assert(pKernel != 0);
 		int check, numberLines=0;
