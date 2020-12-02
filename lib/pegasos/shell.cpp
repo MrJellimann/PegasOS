@@ -268,30 +268,46 @@ void PShell::CommandMatch(const char *commandName)
 	{
 		assert(pKernel != 0);
 		int check;
-		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"We entered head command with |%s| |%s|\n",_commandParameterOne,_commandParameterTwo);
-		char mainFileName[] = "", newFileName[MAX_INPUT_LENGTH]="", buffer[MAX_INPUT_LENGTH]="";
-		strcpy(mainFileName,_directory);
-		strcat(mainFileName,"/");
-		strcat(mainFileName,_commandParameterOne);
-		strcpy(newFileName,_commandParameterTwo);
-		strcat(newFileName,"/");
-		strcat(newFileName,_commandParameterOne);
-		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The mainFileName is: |%s| The newFileName is: |%s|\n",mainFileName,newFileName);
+		char mainFileName[] = "", newFileName[MAX_INPUT_LENGTH] = "", buffer[MAX_INPUT_LENGTH] = "";
 		
+		strcpy(mainFileName, _directory);
+		strcat(mainFileName, "/");
+		strcat(mainFileName, _commandParameterOne);
+
+		strcpy(newFileName, _commandParameterTwo);
+		strcat(newFileName, "/");
+		strcat(newFileName, _commandParameterOne);
+
+		// Debug
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogDebug, "The mainFileName is: |%s| The newFileName is: |%s|\n", mainFileName, newFileName);
+		
+		// Try to open file for reading first
 		FRESULT mainResult = f_open (&_ReadFile, mainFileName, FA_READ | FA_OPEN_EXISTING);
-		FRESULT newResult = f_open (&_NewFIle, newFileName, FA_WRITE | FA_CREATE_ALWAYS);
 		if (mainResult != FR_OK)
 		{
-			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", mainFileName);
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file for reading: %s", mainFileName);
+
+			return;
 		}
-		if (newResult != FR_OK)
+		else
 		{
-			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", newFileName);
+			// Success -> now make new file for writing
+			FRESULT newResult = f_open (&_NewFIle, newFileName, FA_WRITE | FA_CREATE_ALWAYS);
+
+			if (newResult != FR_OK)
+			{
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file for writing: %s", newFileName);
+
+				f_close(&_ReadFile);
+				return;
+			}
 		}
 
+		// Write to new file
 		while (f_gets(buffer, MAX_INPUT_LENGTH, &_ReadFile) != nullptr)
 		{
-			//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
+			// Debug
+			// pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
 			check = f_puts(buffer,&_NewFIle);
 
 			if (!check)
@@ -299,9 +315,16 @@ void PShell::CommandMatch(const char *commandName)
 				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Failed to write line to file '%s'", newFileName);
 			}
 		}
+
+		// Cleanup
 		if (f_close (&_NewFIle) != FR_OK)
 		{
-			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file for writing: '%s'", newFileName);
+		}
+
+		if (f_close(&_ReadFile) != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file for reading: '%s'", mainFileName);
 		}
 	}
     // Current Directory
@@ -463,7 +486,7 @@ void PShell::CommandMatch(const char *commandName)
 	{
 		assert(pKernel != 0);
 		int check;
-		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"We entered head command with |%s| |%s|\n",_commandParameterOne,_commandParameterTwo);
+		
 		// mainFileName -> file you're moving
 		// newFileName -> destination you're moving to
 		char mainFileName[MAX_DIRECTORY_LENGTH] = "", newFileName[MAX_INPUT_LENGTH] = "", buffer[MAX_INPUT_LENGTH] = "";
@@ -476,11 +499,15 @@ void PShell::CommandMatch(const char *commandName)
 		strcat(newFileName,"/");
 		strcat(newFileName,_commandParameterOne);
 
-		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The mainFileName is: |%s| The newFileName is: |%s|\n",mainFileName,newFileName);
+		// Debug
+		// pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The mainFileName is: |%s| The newFileName is: |%s|\n",mainFileName,newFileName);
+
 		FRESULT mainResult = f_open (&_ReadFile, mainFileName, FA_READ | FA_OPEN_EXISTING);
 		if (mainResult != FR_OK)
 		{
-			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", mainFileName);
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file for reading: %s", mainFileName);
+
+			return;
 		}
 		else
 		{
@@ -488,7 +515,9 @@ void PShell::CommandMatch(const char *commandName)
 		
 			if (newResult != FR_OK)
 			{
-				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", newFileName);
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file for writing: %s", newFileName);
+
+				return;
 			}
 			else
 			{
@@ -507,12 +536,17 @@ void PShell::CommandMatch(const char *commandName)
 		
 		if (f_close (&_NewFIle) != FR_OK)
 		{
-			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file for writing: '%s'", newFileName);
 		}
+		if (f_close (&_ReadFile) != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file for reading: '%s'", mainFileName);
+		}
+
 		FRESULT deleteResult = f_unlink(mainFileName);
 		if ((deleteResult != FR_OK) && (strcmp("delete", commandName) == 0))
 		{
-			pKernel->GetKernelScreenDevice()->Write("The file was not deleted.\n", 26);
+			pKernel->GetKernelScreenDevice()->Write("The original file was not deleted.\n", 26);
 		}
 	}
     // Reboot
