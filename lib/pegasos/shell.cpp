@@ -261,6 +261,18 @@ void PShell::CommandMatch(const char *commandName)
 	else if (strcmp("clear", commandName) == 0)
 	{
 		assert(pKernel != 0);
+		for (int i = 0; i < 60; i++)
+		{
+			pKernel->GetKernelScreenDevice()->Write("\n",1);
+		}
+
+		stat = pKernel->GetKernelScreenDevice()->GetStatus();
+		stat.nState = 2;
+		if(pKernel->GetKernelScreenDevice()->SetStatus(stat)==false)
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogDebug, "Screen stat just returned false");
+		}
+		pKernel->GetKernelScreenDevice()->Write("H",1);	
 	}
     // Concat
 	else if (strcmp("concat", commandName) == 0)
