@@ -311,7 +311,7 @@ void CKernel::commenceLogin()
 
 		if (strcmp(Buffer, _inputPassword) == 0)
 		{
-			s_pThis->m_Screen.Write("Successfully logged in!\n",24);
+			s_pThis->m_Screen.Write("\nSuccessfully logged in!\n",25);
 
 			// First, try to move into the user's 'desktop'
 			strcpy(userDirectory, "SD:/users/");
@@ -419,7 +419,7 @@ void CKernel::commenceLogin()
 
 		if (Pass == 1)
 		{
-			s_pThis->m_Screen.Write("Successfully logged in!\n", 24);
+			s_pThis->m_Screen.Write("\nSuccessfully logged in!\n", 25);
 
 			// First, try to move into the user's 'desktop'
 			strcpy(userDirectory, "SD:/users/");

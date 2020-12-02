@@ -108,7 +108,12 @@ void PShell::SplitCommandLine(const char* input)
 			spacebar += 1;
 	}
 
-	if (spacebar == 1)
+
+	if (spacebar == 0)
+	{
+		strcpy(_mainCommandName, input);
+	}
+	else if (spacebar == 1)
 	{
 		for (int x = 0; x < stringLength; x++)
 		{
@@ -129,11 +134,7 @@ void PShell::SplitCommandLine(const char* input)
 		}
 		_commandParameterOne[subIndex] = '\0';
 	}
-	else if (spacebar == 0)
-	{
-		strcpy(_mainCommandName, input);
-	}
-	else if(spacebar==2)
+	else if(spacebar>=2)
 	{
 		spacebar=0;
 		for (int x = 0; x < stringLength; x++)
@@ -223,18 +224,6 @@ void PShell::CommandMatch(const char *commandName)
 			//m_Logger.Write (_FromKernel, LogPanic, "Cannot create file: %s", FILENAME);
 		}
 	
-		for (unsigned nLine = 1; nLine <= 5; nLine++)
-		{
-			CString Msg;
-			Msg.Format ("Hello File! (Line %u)\n", nLine);
-
-			unsigned nBytesWritten;
-			if (f_write(&_NewFIle, (const char *) Msg, Msg.GetLength (), &nBytesWritten) != FR_OK|| nBytesWritten != Msg.GetLength ())
-			{
-				pKernel->GetKernelLogger()->Write (_FromKernel, LogError, "Write error");
-				break;
-			}
-		}
 
 		
 		if (f_close (&_NewFIle) != FR_OK)
@@ -273,11 +262,6 @@ void PShell::CommandMatch(const char *commandName)
 			pKernel->GetKernelLogger()->Write(_FromKernel, LogDebug, "Screen stat just returned false");
 		}
 		pKernel->GetKernelScreenDevice()->Write("H",1);	
-	}
-    // Concat
-	else if (strcmp("concat", commandName) == 0)
-	{
-		assert(pKernel != 0);
 	}
 	// Copy
 	else if (strcmp("copy", commandName) == 0)
@@ -501,11 +485,7 @@ void PShell::CommandMatch(const char *commandName)
 			}
 		}
 		
-		while (f_gets(buffer,100,&_ReadFile) != nullptr)
-		{
-			//pKernel->GetKernelScreenDevice()->Write(buffer,strlen(buffer));
-			check = f_puts(buffer, &_NewFIle); // ???
-		}
+		
 		if (f_close (&_NewFIle) != FR_OK)
 		{
 			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
@@ -587,6 +567,44 @@ void PShell::CommandMatch(const char *commandName)
 
 		// Newline at end of 'tail' printouts
 		pKernel->GetKernelScreenDevice()->Write ("\n", 1);
+	}
+	// Touch
+	else if (strcmp("touch", commandName) == 0)
+	{
+		assert(pKernel != 0);
+		int check, numberLines=0;
+		// mainFileName -> file you're moving
+		// newFileName -> destination you're moving to
+		char mainFileName[MAX_DIRECTORY_LENGTH] = "", buffer[MAX_INPUT_LENGTH] = "";
+		
+		strcpy(mainFileName,_directory);
+		strcat(mainFileName,"/");
+		strcat(mainFileName,_commandParameterOne);
+
+		FRESULT mainResult = f_open (&_NewFIle, mainFileName, FA_WRITE | FA_OPEN_EXISTING | FA_READ);
+		if (mainResult != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", mainFileName);
+		}
+
+		while (f_gets(buffer,MAX_INPUT_LENGTH,&_NewFIle) != nullptr)
+		{
+			numberLines+=1;
+		}
+
+		strcpy(buffer,_commandParameterTwo);
+		check = f_puts(buffer, &_NewFIle); 
+		check = f_puts("\n",&_NewFIle);
+
+		if(check==0)
+		{
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot write to file");
+		}
+
+		if (f_close (&_NewFIle) != FR_OK)
+		{
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
+		}
 	}
 	// Change the Username color
 	else if (strcmp("usertext",commandName)==0)
