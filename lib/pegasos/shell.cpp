@@ -223,8 +223,6 @@ void PShell::CommandMatch(const char *commandName)
 			pKernel->GetKernelLogger()->Write(_FromKernel, LogPanic, "Cannot create file %s", _NewFIle);
 			//m_Logger.Write (_FromKernel, LogPanic, "Cannot create file: %s", FILENAME);
 		}
-	
-
 		
 		if (f_close (&_NewFIle) != FR_OK)
 		{
@@ -638,26 +636,43 @@ void PShell::CommandMatch(const char *commandName)
 		FRESULT mainResult = f_open (&_NewFIle, mainFileName, FA_WRITE | FA_OPEN_EXISTING | FA_READ);
 		if (mainResult != FR_OK)
 		{
-			pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file: %s", mainFileName);
+			// Attempt to create the file
+			FRESULT _tempR = f_open (&_NewFIle, mainFileName, FA_WRITE | FA_READ);
+
+			if (_tempR != FR_EXIST || _tempR == FR_NO_FILE)
+			{
+				// Last attempt to create the file
+				_tempR = f_open(&_NewFIle, mainFileName, FA_WRITE | FA_CREATE_ALWAYS | FA_READ);
+			}
+
+			// If we still cannot open it for writing, exit
+			if (_tempR != FR_OK)
+			{
+				pKernel->GetKernelLogger()->Write(_FromKernel, LogWarning, "Cannot open file for writing: '%s'", mainFileName);
+				return;
+			}
 		}
 
-		while (f_gets(buffer,MAX_INPUT_LENGTH,&_NewFIle) != nullptr)
+		// Skip to end of file
+		while (f_gets(buffer, MAX_INPUT_LENGTH, &_NewFIle) != nullptr)
 		{
-			numberLines+=1;
+			numberLines += 1;
 		}
 
-		strcpy(buffer,_commandParameterTwo);
+		// Append string to file
+		strcpy(buffer, _commandParameterTwo);
 		check = f_puts(buffer, &_NewFIle); 
 		check = f_puts("\n",&_NewFIle);
 
-		if(check==0)
+		if (check == 0)
 		{
-			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot write to file");
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot write to file '%s'", mainFileName);
 		}
 
+		// Cleanup
 		if (f_close (&_NewFIle) != FR_OK)
 		{
-			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file");
+			pKernel->GetKernelLogger()->Write (_FromKernel, LogWarning, "Cannot close file for writing '%s'", mainFileName);
 		}
 	}
 	// Change the Username color
