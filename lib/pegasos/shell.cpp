@@ -911,63 +911,74 @@ void PShell::EditUserName(const char *loginName)
 
 void PShell::FixWorkingDirectory()
 {
-	int index=0, currentAmount=0, amountSlash=0, length=strlen(_directory), amountDot=0;
-	char temp[MAX_INPUT_LENGTH]="";
-	//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The directory variable is: |%s|",_directory);
-	//	This finds the number ".."
-	while (index<length)
+	int index = 0, currentAmount = 0, amountSlash = 0, length = strlen(_directory), amountDot = 0;
+	char temp[MAX_INPUT_LENGTH] = "";
+
+	// Debug
+	// pKernel->GetKernelLogger()->Write(_FromKernel, LogDebug, "The directory variable was: |%s|", _directory);
+	
+	// Counts the number of occurences of ".."
+	while (index < length)
 	{
-		if(_directory[index]=='.')
+		if(_directory[index] == '.')
 		{
-			if(_directory[index+1]=='.')
+			if(_directory[index+1] == '.')
 			{
-				amountDot+=1;
+				amountDot += 1;
 			}
 		}
 		index++;
 	}
-	//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The amountDot is : %d",amountDot);
-	index=0;
-	//	This finds the first instance of ".."
-	while (index<length)
+	
+	index = 0;
+	// Counts the number of occurences of "/"
+	while (index < length)
 	{
-		if(_directory[index]=='/')
+		if (_directory[index] == '/')
 		{
-			amountSlash+=1;
+			amountSlash += 1;
 		}
 		index++;
 	}
-	//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The amountSlash is : %d",amountSlash);
-	strcpy(temp,_directory);
-	//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Insanity check: |%s|\n",temp);
-	while(amountDot>0)
+
+	strcpy(temp, _directory);
+
+	// If the number of slashes and dots are equal, clear to root
+	if (amountSlash == amountDot)
 	{
-		index=0;
-		//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Entered the first fixing loop loop\n");
-		while(currentAmount!=(amountSlash-amountDot))
-		{
-			//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Entered the second fixing loop\n");
-			if(temp[index]=='/')
-			{
-				currentAmount+=1;
-				//break;
-			}
-			index+=1;
-		}
-		temp[index-1]='\0';
-		amountDot--;
+		strcpy(_directory, "SD:");
+		return;
 	}
-	//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"Index is %d\n",index);
-	//pKernel->GetKernelLogger()->Write(_FromKernel,LogDebug,"The final result for temp is: |%s|\n",temp);
-	strcpy(_directory,temp);
+
+	for (int i = 1; i <= amountDot; i++)
+	{
+		index = 0;
+		currentAmount = 0;
+
+		// Offset by 1, handles amounts of slashes greater than dot pairs
+		while (currentAmount < (amountSlash - amountDot + 1) - i)
+		{
+			if (temp[index] == '/')
+				currentAmount++;
+			
+			index++;
+		}
+		temp[index-1] = '\0';
+	}
+
+	strcpy(_directory, temp);
+
+	// Debug
+	// pKernel->GetKernelLogger()->Write(_FromKernel, LogDebug, "The directory variable is: |%s|",_directory);
 }
 
 void PShell::SetColor(int red, int green, int blue)
 {
-	color = COLOR16(red,green,blue); 	
+	color = COLOR16(red, green, blue); 	
 	stat = pKernel->GetKernelScreenDevice()->GetStatus();
 	stat.Color = color;
-	if(pKernel->GetKernelScreenDevice()->SetStatus(stat)==false)
+
+	if (pKernel->GetKernelScreenDevice()->SetStatus(stat) == false)
 	{
 		pKernel->GetKernelLogger()->Write(_FromKernel, LogDebug, "Screen stat just returned false");
 	}
