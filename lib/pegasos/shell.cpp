@@ -23,8 +23,8 @@ char _userName[PMAX_INPUT_LENGTH] = "GiancarloGuillen";
 char _helloMessagePartOne[PMAX_INPUT_LENGTH] = "Well hello there ";
 char _helloMessagePartTwo[PMAX_INPUT_LENGTH] = ", and welcome to PegasOS!";
 char _helpMessage1[PMAX_INPUT_LENGTH] = "This is a list of the Commands for PegasOS:\n\tchangedir\n\tclear\n\tcopy\n\tcreatedir";
-char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp\n\tlistdir\n\tmove";
-char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tpower\n\tsysteminfo\n\ttail\n\ttasklist\n\tterminatetask\n\tusertext\n\twriteto\n";
+char _helpMessage2[PMAX_INPUT_LENGTH] = "\n\tcreatefile\n\tcurrenttasks\n\tdelete\n\tdeletedir\n\tdirtext\n\tdisplaytasks\n\techo\n\thead\n\thello\n\thelp";
+char _helpMessage3[PMAX_INPUT_LENGTH] = "\n\tlistdir\n\tmove\n\tpower\n\tsysteminfo\n\ttail\n\tusertext\n\twriteto\n";
 FIL _NewFIle, _ReadFile;
 TScreenColor color;
 TScreenStatus stat;
@@ -509,6 +509,7 @@ void PShell::CommandMatch(const char *commandName)
   	// Display Tasks/Scheduler Demo
 	else if (strcmp("displaytasks", commandName) == 0)
   	{
+		pKernel->GetKernelScreenDevice()->Write("Enter 's' and return to stop the demo.\n", 39);
 		CScheduler::Get ()->CScheduler::turnPrintOn();
 	}
 	// Stop printing Scheduler Demo
@@ -671,10 +672,55 @@ void PShell::CommandMatch(const char *commandName)
 		
 		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Clock speed: %i", _info->GetClockRate(CLOCK_ID_ARM));
 	}
+	// Terminate Task (at top of stack)
+	else if (strcmp("terminatetask", commandName) == 0)
+	{
+		// Scrapped for now!
+		// CScheduler::Get ()->CScheduler::PopTask();
+	}
+	// (Display) Current Tasks
+	else if (strcmp("currenttasks", commandName) == 0)
+	{
+		// Flip this to 1 to use the logger instead
+		int useLogger = 0;
 
-	// strcpy(_mainCommandName, "");
-	// strcpy(_commandParameterOne, "");
-	// strcpy(_commandParameterTwo, "");
+		if (!useLogger)
+		{
+			CString temp = CScheduler::Get ()->CScheduler::listTasks();
+			pKernel->GetKernelScreenDevice()->Write(temp, temp.GetLength());
+		}
+		else
+		{
+			CScheduler::Get()->ListTasks();
+		}
+
+		// Newline after 'currenttasks' command
+		pKernel->GetKernelScreenDevice()->Write("\n", 1);
+	}
+
+	// Secret Command shhhhh
+	else if (strcmp("dumpaddr", commandName) == 0)
+	{
+		// Big Address Dump
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Kernel Addr: %x", pKernel);
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Shell Addr: %x", s_pThis);
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "ActLED Addr: %x", pKernel->GetKernelActLED());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "DeviceNameService Addr: %x", pKernel->GetKernelDNS());
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "EMMC Addr: %x", &m_EMMC);
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Event Addr: %x", pKernel->GetKernelSyncEvent());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "ExceptionHandler Addr: %x", pKernel->GetKernelExceptionHandler());
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Filesystem Addr: %x", &m_FileSystem);
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "MachineInfo Addr: %x", pKernel->GetKernelInfo());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Interrupt Addr: %x", pKernel->GetKernelInterruptSystem());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Logger Addr: %x", pKernel->GetKernelLogger());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Memory Addr: %x", pKernel->GetKernelMemory());
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Options Addr: %x", &m_Options);
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Scheduler Addr: %x", pKernel->GetKernelScheduler());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Screen Addr: %x", pKernel->GetKernelScreenDevice());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Serial Addr: %x", pKernel->GetKernelSerialDevice());
+		pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "Timer Addr: %x", pKernel->GetKernelTimer());
+		// pKernel->GetKernelLogger()->Write(_FromKernel, LogNotice, "USBHCI Addr: %x", &m_USBHCI);
+	}
 
 	memset(_mainCommandName, 0, sizeof(_mainCommandName));
 	memset(_commandParameterOne, 0, sizeof(_commandParameterOne));

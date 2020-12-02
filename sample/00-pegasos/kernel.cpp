@@ -169,6 +169,7 @@ TShutdownMode CKernel::Run (void)
 	for (unsigned nTaskID = 1; nTaskID <= 4; nTaskID++)
 	{
 		temp = new CScreenTask (nTaskID, &m_Screen);
+		// m_Logger.Write(FromKernel, LogNotice, "ScreenTask %i Addr: %x", nTaskID, temp);
 		temp->SetWeight(nTaskID);
 	}
 

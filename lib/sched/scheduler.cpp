@@ -197,6 +197,23 @@ void CScheduler::RemoveTask (CTask *pTask)
 	assert (0);
 }
 
+void CScheduler::PopTask()
+{
+	// DO NOT UNCOMMENT THIS UNLESS YOU KNOW WHAT YOU'RE DOING
+	// POPPING THE TASK AT [0] KILLS THE SYSTEM, FORCING MANUAL RESTART
+	
+	// m_pTask[0] = 0;
+	
+	// if (m_nTasks > 0)
+	// 	m_nTasks--;
+	
+	// if (0 == m_nTasks-1)
+	// {
+	// 	m_nTasks--;
+	// }
+	return;
+}
+
 void CScheduler::BlockTask (CTask **ppTask)
 {
 	assert (ppTask != 0);
@@ -308,4 +325,59 @@ void CScheduler::turnPrintOn()
 boolean CScheduler::getPrint()
 {
 	return print;
+}
+
+// This one prints directly to the screen
+CString CScheduler::listTasks()
+{
+	CString Message, _temp;
+	
+	_temp.Format("Current Task Index: %i || Task Count: %i || Total Possible Tasks: %i\n\n", m_nCurrent, m_nTasks, MAX_TASKS);
+	Message.Append((const char*) _temp);
+
+	int i, tempWeight;
+	// Using m_nTasks here prevents a stack overflow and kernel panic so be nice!
+	for (i = 0; i < m_nTasks; i++)
+	{
+		tempWeight = m_pTask[i]->GetWeight();
+
+		if (tempWeight < 0)
+			tempWeight = -1;
+		
+		// Format the string
+		// _temp.Format ("Index: %d | TaskWeight: %d\n", i, tempWeight);
+		_temp.Format ("Index: %d | Weight: %d | Addr: %x\n", i, tempWeight, m_pTask[i]);
+
+		// Add to message
+		Message.Append((const char*) _temp);
+	}
+
+	// Send off message
+	return Message;
+}
+
+// This one uses the logger to get it done
+void CScheduler::ListTasks()
+{
+	int i, tempWeight;
+
+	CLogger::Get()->Write(FromScheduler, LogNotice, "Current Task Index: %i || Task Count: %i || Total Possible Tasks: %i\n", m_nCurrent, m_nTasks, MAX_TASKS);
+
+	// Using m_nTasks here prevents a stack overflow and kernel panic so be nice!
+	for (i = 0; i < m_nTasks; i++)
+	{
+		if (m_pTask[i] == 0)
+		{
+			tempWeight = -1;
+		}
+		else
+		{
+			tempWeight = m_pTask[i]->GetWeight();
+
+			if (tempWeight < 0)
+				tempWeight = -1;
+		}
+		
+		CLogger::Get()->Write(FromScheduler, LogNotice, "Index: %d | Weight: %d | Addr: %x", i, tempWeight, m_pTask[i]);
+	}
 }

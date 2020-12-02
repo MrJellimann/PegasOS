@@ -23,6 +23,7 @@
 #include <circle/sched/task.h>
 #include <circle/sysconfig.h>
 #include <circle/types.h>
+#include <circle/string.h>
 
 typedef void TSchedulerTaskHandler (CTask *pTask);
 
@@ -40,6 +41,10 @@ public:
 	void turnPrintOff();
 	void turnPrintOn();
 	boolean getPrint();
+	void PopTask();
+	void RemoveTask(CTask *pTask);
+	CString listTasks ();
+	void ListTasks();
 
 	CTask *GetCurrentTask (void);
 
@@ -65,7 +70,7 @@ private:
 	void WakeTask (CTask **ppTask);		// can be called from interrupt context
 	friend class CSynchronizationEvent;
 
-	void RemoveTask (CTask *pTask);
+	// void RemoveTask (CTask *pTask);
 	unsigned GetNextTask (void);		// returns index into m_pTask or MAX_TASKS if no task was found
 
 private:
