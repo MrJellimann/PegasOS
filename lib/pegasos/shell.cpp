@@ -998,9 +998,9 @@ void PShell::FixWorkingDirectory()
 	// Counts the number of occurences of ".."
 	while (index < length)
 	{
-		if(_directory[index] == '.')
+		if (_directory[index] == '.')
 		{
-			if(_directory[index+1] == '.')
+			if (_directory[index+1] == '.')
 			{
 				amountDot += 1;
 			}
